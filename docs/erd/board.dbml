@@ -1,0 +1,36 @@
+Table user {
+  id BIGINT [PK, INCREMENT]
+  username VARCHAR(50) [NOT NULL, UNIQUE]
+  password VARCHAR(255) [NOT NULL]
+  name VARCHAR(100) [NOT NULL]
+  role VARCHAR(20) [DEFAULT: 'USER']
+  is_deleted BOOLEAN [DEFAULT: FALSE]
+  created_date TIMESTAMP
+  created_by BIGINT [ref: > user.id]
+  modified_date TIMESTAMP
+  modified_by BIGINT [ref: > user.id]
+}
+
+Table board {
+  id BIGINT [PK, INCREMENT]
+  name VARCHAR(100) [NOT NULL, UNIQUE]
+  description VARCHAR(500)
+  is_deleted BOOLEAN [DEFAULT: FALSE]
+  created_date TIMESTAMP
+  created_by BIGINT [ref: > user.id]
+  modified_date TIMESTAMP
+  modified_by BIGINT [ref: > user.id]
+}
+
+Table post {
+  id BIGINT [PK, INCREMENT]
+  board_id BIGINT [ref: > board.id]
+  title VARCHAR(255) [NOT NULL]
+  content TEXT
+  is_deleted BOOLEAN [DEFAULT: FALSE]
+  created_date TIMESTAMP
+  created_by BIGINT [ref: > user.id]
+  modified_date TIMESTAMP
+  modified_by BIGINT [ref: > user.id]
+}
+
