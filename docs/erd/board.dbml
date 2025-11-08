@@ -6,9 +6,9 @@ Table user {
   role VARCHAR(20) [DEFAULT: 'USER']
   is_deleted BOOLEAN [DEFAULT: FALSE]
   created_date TIMESTAMP
-  created_by BIGINT [ref: > user.id]
+  created_by VARCHAR(50)
   modified_date TIMESTAMP
-  modified_by BIGINT [ref: > user.id]
+  modified_by VARCHAR(50)
 }
 
 Table board {
@@ -17,9 +17,9 @@ Table board {
   description VARCHAR(500)
   is_deleted BOOLEAN [DEFAULT: FALSE]
   created_date TIMESTAMP
-  created_by BIGINT [ref: > user.id]
+  created_by VARCHAR(50)
   modified_date TIMESTAMP
-  modified_by BIGINT [ref: > user.id]
+  modified_by VARCHAR(50)
 }
 
 Table post {
@@ -29,8 +29,22 @@ Table post {
   content TEXT
   is_deleted BOOLEAN [DEFAULT: FALSE]
   created_date TIMESTAMP
-  created_by BIGINT [ref: > user.id]
+  created_by VARCHAR(50)
   modified_date TIMESTAMP
-  modified_by BIGINT [ref: > user.id]
+  modified_by VARCHAR(50)
 }
 
+Table attachment {
+    id BIGINT [PK, INCREMENT]
+    post_id BIGINT [ref: > post.id]
+    original_name VARCHAR(255) [NOT NULL]
+    stored_name VARCHAR(255) [NOT NULL]
+    file_path VARCHAR(500) [NOT NULL]
+    file_size BIGINT
+    content_type VARCHAR(100)
+    is_deleted BOOLEAN [DEFAULT: FALSE]
+    created_date TIMESTAMP
+    created_by VARCHAR(50)
+    modified_date TIMESTAMP
+    modified_by VARCHAR(50)
+}
