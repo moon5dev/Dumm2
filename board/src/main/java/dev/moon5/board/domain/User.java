@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class User extends BaseEntity {
@@ -29,9 +30,33 @@ public class User extends BaseEntity {
 
     @Column(length = 20)
     @Setter
-    private String role = "USER";
+    private String role;
 
     @Setter
-    private Boolean isDelete = false;
+    private Boolean isDeleted;
+
+    private User(String username, String password, String name, String role, Boolean isDeleted) {
+        this.username = username;
+        this.password = password;
+        this.name = name;
+        this.role = role;
+        this.isDeleted = isDeleted;
+    }
+
+    public static User of(String username, String password, String name, String role, Boolean isDeleted) {
+        return new User(username, password, name, role, isDeleted);
+    }
+
+    public static User of(String username, String password, String name) {
+        return new User(username, password, name, "USER", false);
+    }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
+
+    public void deleteUser() {
+        this.isDeleted = true;
+    }
 
 }
