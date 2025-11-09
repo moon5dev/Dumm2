@@ -43,16 +43,49 @@ public class User extends BaseEntity {
         this.isDeleted = isDeleted;
     }
 
-    public static User of(String username, String password, String name, String role, Boolean isDeleted) {
-        return new User(username, password, name, role, isDeleted);
+    public static User of(String username,
+                          String password,
+                          String name,
+                          String role,
+                          Boolean isDeleted) {
+        return new User(username,
+                password,
+                name,
+                role,
+                isDeleted);
     }
 
-    public static User of(String username, String password, String name) {
-        return new User(username, password, name, "USER", false);
+    public static User of(String username,
+                          String password,
+                          String name,
+                          String role) {
+        return new User(username,
+                password,
+                name,
+                role,
+                false);
+    }
+
+    public static User of(String username,
+                          String password,
+                          String name) {
+        return new User(username,
+                password,
+                name,
+                "USER",
+                false);
     }
 
     public void changePassword(String password) {
         this.password = password;
+    }
+
+    public void changeName(String name) {
+        this.name = name;
+    }
+
+    public void changeRole(String role) {
+        this.role = role;
     }
 
     public void deleteUser() {
