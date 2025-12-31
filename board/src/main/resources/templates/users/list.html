@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Users List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>User List</h4>
+            <a href="/admin/users/new" class="btn btn-primary">
+                + Create User
+            </a>
+        </div>
+
+        <form class="mb-4" method="get" th:action="@{/admin/users}">
+            <div class="row">
+                <div class="col-12">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Type a keyword">
+                        <button class="btn btn-outline-secondary" type="submit">Search</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Username</th>
+                <th scope="col">Name</th>
+                <th scope="col">Is Deleted</th>
+                <th scope="col">Registered Date</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user, stat : ${users}">
+                <th scope="row" th:text="${stat.count}">1</th>
+                <td th:text="${user.username}">Moon5</td>
+                <td th:text="${user.name}">Moon</td>
+                <td>
+                    <span th:if="${user.isDeleted}" class="badge bg-danger">DELETED</span>
+                    <span th:unless="${user.isDeleted}" class="badge bg-success">ACTIVE</span>
+                </td>
+                <td th:text="${#temporals.format(user.createdDate, 'yyyy-MM-dd')}">2025.12.27</td>
+                <td>
+                    <a th:if="${!user.isDeleted}"
+                       th:href="@{/admin/users/{id}(id=${user.id})}"
+                       class="btn btn-sm btn-outline-primary">
+                        Edit
+                    </a>
+                    <form th:if="${!user.isDeleted}"
+                          th:action="@{/admin/users/{id}/delete(id=${user.id})}"
+                          method="post"
+                          style="display:inline;">
+                          <button type="submit"
+                                  class="btn btn-sm btn-outline-danger"
+                                  onclick="return confirm('Delete this user?')">
+                              Delete
+                          </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
