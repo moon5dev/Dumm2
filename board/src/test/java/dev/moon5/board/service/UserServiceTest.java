@@ -5,6 +5,7 @@ import dev.moon5.board.dto.UserRegisterDto;
 import dev.moon5.board.dto.UserResponseDto;
 import dev.moon5.board.dto.UserUpdateDto;
 import dev.moon5.board.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -35,6 +37,29 @@ class UserServiceTest {
         // Then
         assertThat(responseDto).isNotNull();
         assertThat(responseDto.name()).isEqualTo(dto.name());
+    }
+
+    @Test
+    void registerUser_fail_whenUsernameExists() {
+        // Given
+        User user = createUser();
+        userRepository.save(user);
+
+        UserRegisterDto dto = createRegisterDto();
+
+        // When & Then
+        assertThatThrownBy(() -> sut.register(dto))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void findById_fail_whenUserNotFound() {
+        // Given
+        long id = 10000L;
+
+        // When & Then
+        assertThatThrownBy(() -> sut.findById(id))
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
