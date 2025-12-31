@@ -2,12 +2,15 @@ package dev.moon5.board.dto;
 
 import dev.moon5.board.domain.User;
 
+import java.time.LocalDateTime;
+
 public record UserResponseDto(
         Long id,
         String username,
         String name,
         String role,
-        Boolean isDeleted
+        Boolean isDeleted,
+        LocalDateTime createdDate
 ) {
 
     public static UserResponseDto from(User user) {
@@ -15,7 +18,8 @@ public record UserResponseDto(
                 user.getUsername(),
                 user.getName(),
                 user.getRole(),
-                user.getIsDeleted());
+                user.getIsDeleted(),
+                user.getCreatedDate());
     }
 
 }
