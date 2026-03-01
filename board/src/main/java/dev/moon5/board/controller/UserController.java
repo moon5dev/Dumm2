@@ -1,6 +1,6 @@
 package dev.moon5.board.controller;
 
-import dev.moon5.board.dto.UserRegisterDto;
+import dev.moon5.board.dto.UserCreateDto;
 import dev.moon5.board.dto.UserUpdateDto;
 import dev.moon5.board.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class UserController {
     public String list(Model model) {
         log.info("UserController :: list()");
 
-        model.addAttribute("users", userService.findAll(PageRequest.of(0, 10)));
+        model.addAttribute("users", userService.getAll(PageRequest.of(0, 10)));
 
         return "users/list";
     }
@@ -39,22 +39,22 @@ public class UserController {
         return "users/form";
     }
 
-    @GetMapping("/{id}")
-    public String editForm(@PathVariable long id, Model model) {
-        log.info("UserController :: editForm() :: id = {}", id);
+    @GetMapping("/{userId}")
+    public String editForm(@PathVariable long userId, Model model) {
+        log.info("UserController :: editForm() :: userId = {}", userId);
 
         model.addAttribute("mode", "edit");
-        model.addAttribute("user", userService.findById(id));
+        model.addAttribute("user", userService.get(userId));
 
         return "users/form";
     }
 
     @PostMapping
-    public String createUser(UserRegisterDto dto, Model model) {
+    public String create(UserCreateDto dto, Model model) {
         log.info("UserController :: createUser() :: dto = {}", dto);
 
         try {
-            userService.register(dto);
+            userService.create(dto);
 
             return "redirect:/admin/users";
         } catch (IllegalArgumentException e) {
@@ -66,20 +66,20 @@ public class UserController {
         }
     }
 
-    @PostMapping("/{id}")
-    public String updateUser(@PathVariable long id, UserUpdateDto dto, Model model) {
+    @PostMapping("/{userId}")
+    public String update(@PathVariable long userId, UserUpdateDto dto, Model model) {
         log.info("UserController :: updateUser() :: dto = {}", dto);
 
-        userService.updateUser(id, dto);
+        userService.update(userId, dto);
 
         return "redirect:/admin/users";
     }
 
-    @PostMapping("/{id}/delete")
-    public String deleteUser(@PathVariable long id, Model model) {
-        log.info("UserController :: deleteUser() :: id = {}", id);
+    @PostMapping("/{userId}/delete")
+    public String delete(@PathVariable long userId, Model model) {
+        log.info("UserController :: deleteUser() :: userId = {}", userId);
 
-        userService.deleteUser(id);
+        userService.delete(userId);
 
         return "redirect:/admin/users";
     }

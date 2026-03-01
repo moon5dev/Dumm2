@@ -2,7 +2,7 @@ package dev.moon5.board.dto;
 
 import dev.moon5.board.domain.User;
 
-public record UserRegisterDto(
+public record UserCreateDto(
         String username,
         String password,
         String name,

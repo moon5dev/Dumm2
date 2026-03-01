@@ -1,7 +1,7 @@
 package dev.moon5.board.service;
 
 import dev.moon5.board.domain.User;
-import dev.moon5.board.dto.UserRegisterDto;
+import dev.moon5.board.dto.UserCreateDto;
 import dev.moon5.board.dto.UserResponseDto;
 import dev.moon5.board.dto.UserUpdateDto;
 import dev.moon5.board.repository.UserRepository;
@@ -29,10 +29,10 @@ class UserServiceTest {
     @Test
     void registerUser() {
         // Given
-        UserRegisterDto dto = createRegisterDto();
+        UserCreateDto dto = createRegisterDto();
 
         // When
-        UserResponseDto responseDto = sut.register(dto);
+        UserResponseDto responseDto = sut.create(dto);
 
         // Then
         assertThat(responseDto).isNotNull();
@@ -45,10 +45,10 @@ class UserServiceTest {
         User user = createUser();
         userRepository.save(user);
 
-        UserRegisterDto dto = createRegisterDto();
+        UserCreateDto dto = createRegisterDto();
 
         // When & Then
-        assertThatThrownBy(() -> sut.register(dto))
+        assertThatThrownBy(() -> sut.create(dto))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -58,7 +58,7 @@ class UserServiceTest {
         long id = 10000L;
 
         // When & Then
-        assertThatThrownBy(() -> sut.findById(id))
+        assertThatThrownBy(() -> sut.get(id))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -69,7 +69,7 @@ class UserServiceTest {
         User savedUser = userRepository.save(user);
 
         // When
-        UserResponseDto responseDto = sut.findById(savedUser.getId());
+        UserResponseDto responseDto = sut.get(savedUser.getId());
 
         // Then
         assertThat(responseDto).isNotNull();
@@ -85,7 +85,7 @@ class UserServiceTest {
         }
 
         // When
-        Page<UserResponseDto> users = sut.findAll(PageRequest.of(0, 10));
+        Page<UserResponseDto> users = sut.getAll(PageRequest.of(0, 10));
 
         // Then
         assertThat(users).isNotNull();
@@ -100,7 +100,7 @@ class UserServiceTest {
         UserUpdateDto updateDto = new UserUpdateDto("test1234", "DummE", null);
 
         // When
-        sut.updateUser(savedUser.getId(), updateDto);
+        sut.update(savedUser.getId(), updateDto);
 
         // Then
         User updatedUser = userRepository.findById(savedUser.getId()).orElseThrow();
@@ -116,15 +116,15 @@ class UserServiceTest {
         User savedUser = userRepository.save(user);
 
         // When
-        sut.deleteUser(savedUser.getId());
+        sut.delete(savedUser.getId());
 
         // Then
         User deletedUser = userRepository.findById(savedUser.getId()).orElseThrow();
         assertThat(deletedUser.getIsDeleted()).isTrue();
     }
 
-    private UserRegisterDto createRegisterDto() {
-        return new UserRegisterDto("test_user",
+    private UserCreateDto createRegisterDto() {
+        return new UserCreateDto("test_user",
                 "test1234",
                 "Dumm2",
                 "ADMIN");

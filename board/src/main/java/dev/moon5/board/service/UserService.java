@@ -1,7 +1,7 @@
 package dev.moon5.board.service;
 
 import dev.moon5.board.domain.User;
-import dev.moon5.board.dto.UserRegisterDto;
+import dev.moon5.board.dto.UserCreateDto;
 import dev.moon5.board.dto.UserResponseDto;
 import dev.moon5.board.dto.UserUpdateDto;
 import dev.moon5.board.repository.UserRepository;
@@ -23,7 +23,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public UserResponseDto register(UserRegisterDto dto) {
+    public UserResponseDto create(UserCreateDto dto) {
         if (userRepository.findByUsername(dto.username()).isPresent()) {
             throw new IllegalArgumentException("Username is already in use");
         }
@@ -35,21 +35,21 @@ public class UserService {
         return UserResponseDto.from(savedUser);
     }
 
-    public UserResponseDto findById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found, id = " + id));
+    public UserResponseDto get(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found, id = " + userId));
 
         return UserResponseDto.from(user);
     }
 
-    public Page<UserResponseDto> findAll(Pageable pageable) {
+    public Page<UserResponseDto> getAll(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
 
         return users.map(UserResponseDto::from);
     }
 
     @Transactional
-    public void updateUser(Long id, UserUpdateDto dto) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found, id = " + id));
+    public void update(Long userId, UserUpdateDto dto) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found, userId = " + userId));
 
         if (dto.password() != null && !dto.password().isEmpty()) user.changePassword(dto.password());
         if (dto.name() != null && !dto.name().isEmpty()) user.changeName(dto.name());
@@ -57,8 +57,8 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found, id = " + id));
+    public void delete(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found, userId = " + userId));
 
         user.deleteUser();
     }
