@@ -24,6 +24,7 @@ public class Board extends BaseEntity{
     @Setter
     private String description;
 
+    @Setter
     private Boolean isDeleted;
 
     private Board(String name, String description, Boolean isDeleted) {
