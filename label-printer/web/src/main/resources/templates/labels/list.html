@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Label Template Management</title>
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/themes/10.0.0/default/default-ocean-blue.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2025.1.211/js/kendo.all.min.js"></script>
+    <style>
+        body { padding: 20px; font-family: Arial, sans-serif; }
+        .search-area { background: #f5f5f5; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+        .search-area label { margin-right: 5px; }
+        .search-area input, .search-area select { margin-right: 15px; }
+        .toolbar { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<h2>Label Template Management</h2>
+
+<!-- 검색 필터 -->
+<div class="search-area">
+    <label>Template Name</label>
+    <input type="text" id="searchName" placeholder="Template Name"/>
+    <label>Status</label>
+    <select id="searchActive">
+        <option value="">All</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+    </select>
+    <button class="k-button k-button-solid-primary" id="btnSearch">Search</button>
+    <button class="k-button" id="btnReset">Reset</button>
+</div>
+
+<!-- 툴바 -->
+<div class="toolbar">
+    <button class="k-button k-button-solid-primary" id="btnCreate">+ New Template</button>
+</div>
+
+<!-- 그리드 -->
+<div id="grid"></div>
+
+<!-- 팝업 -->
+<div id="labelWindow">
+    <div style="padding: 15px;">
+
+        <!-- 기본 정보 -->
+        <div style="margin-bottom: 10px; display: flex; gap: 10px; align-items: center;">
+            <label>Name *</label>
+            <input type="text" id="templateName" class="k-textbox" style="width: 200px;"/>
+            <label>Description</label>
+            <input type="text" id="description" class="k-textbox" style="width: 200px;"/>
+            <label>Active</label>
+            <input type="checkbox" id="isActive" checked/>
+        </div>
+
+        <!-- 캔버스 크기 -->
+        <div style="margin-bottom: 10px; display: flex; gap: 10px; align-items: center;">
+            <label>Width (cm)</label>
+            <input type="number" id="canvasWidth" value="10" min="1" max="50" style="width: 60px;" class="k-textbox"/>
+            <label>Height (cm)</label>
+            <input type="number" id="canvasHeight" value="5" min="1" max="50" style="width: 60px;" class="k-textbox"/>
+            <button class="k-button" id="btnApplySize">Apply</button>
+        </div>
+
+        <!-- 메인 영역 -->
+        <div style="display: flex; gap: 15px;">
+
+            <!-- 캔버스 -->
+            <div>
+                <canvas id="labelCanvas" style="border: 1px solid #ccc;"></canvas>
+            </div>
+
+            <!-- 속성 패널 -->
+            <div id="propertyPanel" style="width: 210px; background: #f5f5f5; padding: 10px; border-radius: 4px;">
+                <h4 style="margin: 0 0 10px 0;">Properties</h4>
+                <div id="noSelection" style="color: #999;">Select an object</div>
+                <div id="propFields" style="display: none;">
+                    <table style="width: 100%; border-spacing: 0 6px;">
+                        <tr>
+                            <td><label>Type</label></td>
+                            <td><span id="propType"></span></td>
+                        </tr>
+                        <tr id="fieldTypeRow" style="display: none;">
+                            <td><label>Field Type</label></td>
+                            <td>
+                                <select id="propFieldType" class="k-textbox" style="width: 100%"></select>
+                            </td>
+                        </tr>
+                        <tr id="valueRow">
+                            <td><label>Value</label></td>
+                            <td><input type="text" id="propValue" class="k-textbox" style="width: 100%"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>X (cm)</label></td>
+                            <td><input type="number" id="propX" step="0.1" class="k-textbox" style="width: 100%"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>Y (cm)</label></td>
+                            <td><input type="number" id="propY" step="0.1" class="k-textbox" style="width: 100%"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>W (cm)</label></td>
+                            <td><input type="number" id="propW" step="0.1" class="k-textbox" style="width: 100%"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>H (cm)</label></td>
+                            <td><input type="number" id="propH" step="0.1" class="k-textbox" style="width: 100%"/></td>
+                        </tr>
+                        <tr id="fontSizeRow" style="display: none;">
+                            <td><label>Font Size</label></td>
+                            <td><input type="number" id="propFontSize" value="12" class="k-textbox" style="width: 100%"/></td>
+                        </tr>
+                    </table>
+                    <button class="k-button k-button-solid-primary" id="btnApplyProp" style="width: 100%; margin-top: 10px;">Apply</button>
+                    <button class="k-button k-button-solid-error" id="btnDeleteObj" style="width: 100%; margin-top: 5px;">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 컨트롤 추가 버튼 -->
+        <div style="margin-top: 10px; display: flex; gap: 8px;">
+            <button class="k-button" id="btnAddText">+ Text</button>
+            <button class="k-button" id="btnAddBarcode">+ Barcode</button>
+            <button class="k-button" id="btnAddQR">+ QR Code</button>
+            <div style="margin-left: auto;">
+                <button class="k-button k-button-solid-primary" id="btnSave">Save</button>
+                <button class="k-button" id="btnCancel">Cancel</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="printWindow">
+    <div style="padding: 15px;">
+        <div id="printFields" style="margin-bottom: 15px;">
+            <!-- Dynamic fields generated by JS -->
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label>Printer Name</label>
+            <input type="text" id="printerName" class="k-textbox" style="width: 200px;" placeholder="Printer Name"/>
+        </div>
+        <div style="text-align: right;">
+            <button class="k-button k-button-solid-primary" id="btnPrintConfirm">Print</button>
+            <button class="k-button" id="btnPrintCancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const FIELD_TYPES = [
+        { value: "STATIC",       text: "Static Text" },
+        { value: "PLANT",        text: "Plant" },
+        { value: "WAREHOUSE",    text: "Warehouse" },
+        { value: "PRODUCT_NAME", text: "Product Name" },
+        { value: "UNIT",         text: "Unit" },
+        { value: "QUANTITY",     text: "Quantity" },
+        { value: "BIN_NO",       text: "BIN No" },
+        { value: "LOT_NO",       text: "LOT No" },
+        { value: "SERIAL_NO",    text: "Serial No" },
+        { value: "DATE",         text: "Date" }
+    ];
+
+    const SCREEN_DPI = 96;
+    const CM_TO_PX = SCREEN_DPI / 2.54;
+    let currentId = null;
+    let fabricCanvas = null;
+
+    const dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: "/api/labels",
+                type: "GET",
+                contentType: "application/json"
+            }
+        },
+        schema: {
+            data: "data",
+            total: "total"
+        },
+        pageSize: 20
+    });
+
+    $("#grid").kendoGrid({
+        dataSource: dataSource,
+        pageable: true,
+        sortable: true,
+        columns: [
+            { field: "id",           title: "ID",            width: 80 },
+            { field: "templateName", title: "Template Name", width: 200 },
+            { field: "description",  title: "Description",   width: 250 },
+            { field: "isActive",     title: "Active",        width: 100,
+                template: '#= isActive ? "✅" : "❌" #' },
+            { field: "createdDate",  title: "Created At",    width: 180,
+                template: '#= kendo.toString(new Date(createdDate), "yyyy-MM-dd HH:mm") #' },
+            { title: "Actions", width: 220,
+                template: '<button class="k-button k-button-sm btn-edit" data-id="#=id#">Edit</button> ' +
+                    '<button class="k-button k-button-sm k-button-solid-success btn-print" data-id="#=id#">Print</button> ' +
+                    '<button class="k-button k-button-sm k-button-solid-error btn-delete" data-id="#=id#">Delete</button>'
+            }
+        ]
+    });
+
+    const win = $("#labelWindow").kendoWindow({
+        title: "Label Template",
+        width: "900px",
+        height: "620px",
+        modal: true,
+        visible: false,
+        resizable: false,
+        actions: ["Close"]
+    }).data("kendoWindow");
+
+    function initCanvas(widthCm, heightCm) {
+        const widthPx  = Math.round(widthCm  * CM_TO_PX);
+        const heightPx = Math.round(heightCm * CM_TO_PX);
+
+        if (fabricCanvas) {
+            fabricCanvas.dispose();
+        }
+
+        fabricCanvas = new fabric.Canvas('labelCanvas', {
+            width:           widthPx,
+            height:          heightPx,
+            backgroundColor: '#ffffff'
+        });
+
+        fabricCanvas.on('selection:created', onObjectSelected);
+        fabricCanvas.on('selection:updated', onObjectSelected);
+        fabricCanvas.on('selection:cleared', onSelectionCleared);
+        fabricCanvas.on('object:modified', onObjectSelected);
+    }
+
+    function initFieldTypeSelect() {
+        const select = $("#propFieldType");
+        select.empty();
+        FIELD_TYPES.forEach(f => {
+            select.append(`<option value="${f.value}">${f.text}</option>`);
+        });
+    }
+    initFieldTypeSelect();
+
+    $("#propFieldType").on("change", function () {
+        const fieldType = $(this).val();
+        if (fieldType === "STATIC") {
+            $("#valueRow").show();
+            $("#propValue").val("");
+        } else {
+            $("#valueRow").hide();
+            $("#propValue").val("${" + fieldType + "}");
+        }
+
+        const obj = fabricCanvas.getActiveObject();
+        if (!obj || obj.controlType !== "text") return;
+
+        const value = fieldType === "STATIC" ? "" : "${" + fieldType + "}";
+        obj.set({
+            text:         value,
+            controlValue: value,
+            fieldType:    fieldType
+        });
+        fabricCanvas.renderAll();
+    });
+
+    function onObjectSelected(e) {
+        const obj = fabricCanvas.getActiveObject();
+        if (!obj) return;
+
+        $("#noSelection").hide();
+        $("#propFields").show();
+        $("#propType").text(obj.controlType || "unknown");
+        $("#propX").val((obj.left / CM_TO_PX).toFixed(2));
+        $("#propY").val((obj.top  / CM_TO_PX).toFixed(2));
+        $("#propW").val((obj.getScaledWidth()  / CM_TO_PX).toFixed(2));
+        $("#propH").val((obj.getScaledHeight() / CM_TO_PX).toFixed(2));
+        $("#propFontSize").val(obj.fontSize || 12);
+
+        if (obj.controlType === "text") {
+            $("#fieldTypeRow").show();
+            $("#fontSizeRow").show();
+            const fieldType = obj.fieldType || "STATIC";
+            $("#propFieldType").val(fieldType);
+            if (fieldType === "STATIC") {
+                $("#valueRow").show();
+                $("#propValue").val(obj.controlValue || "");
+            } else {
+                $("#valueRow").hide();
+                $("#propValue").val("${" + fieldType + "}");
+            }
+        } else {
+            $("#fieldTypeRow").hide();
+            $("#fontSizeRow").hide();
+            $("#valueRow").show();
+            $("#propValue").val(obj.controlValue || "");
+        }
+    }
+
+    function onSelectionCleared() {
+        $("#noSelection").show();
+        $("#propFields").hide();
+    }
+
+    $("#btnApplyProp").on("click", function () {
+        const obj = fabricCanvas.getActiveObject();
+        if (!obj) return;
+
+        const fieldType = $("#propFieldType").val();
+        const value = (obj.controlType === "text" && fieldType !== "STATIC")
+            ? "${" + fieldType + "}"
+            : $("#propValue").val();
+
+        obj.set({
+            left:         parseFloat($("#propX").val()) * CM_TO_PX,
+            top:          parseFloat($("#propY").val()) * CM_TO_PX,
+            controlValue: value,
+            fieldType:    fieldType
+        });
+
+        if (obj.controlType === "text") {
+            obj.set({
+                text:     value,
+                fontSize: parseInt($("#propFontSize").val())
+            });
+        }
+
+        fabricCanvas.renderAll();
+    });
+
+    $("#btnDeleteObj").on("click", function () {
+        const obj = fabricCanvas.getActiveObject();
+        if (!obj) return;
+        fabricCanvas.remove(obj);
+        onSelectionCleared();
+    });
+
+    $("#btnApplySize").on("click", function () {
+        const w = parseFloat($("#canvasWidth").val());
+        const h = parseFloat($("#canvasHeight").val());
+        if (!w || !h) return;
+        const objects = fabricCanvas.getObjects();
+        initCanvas(w, h);
+        objects.forEach(obj => fabricCanvas.add(obj));
+        fabricCanvas.renderAll();
+    });
+
+    $("#btnAddText").on("click", function () {
+        const text = new fabric.IText("Static Text", {
+            left:         20,
+            top:          20,
+            fontSize:     14,
+            controlType:  "text",
+            controlValue: "Static Text",
+            fieldType:    "STATIC"
+        });
+        fabricCanvas.add(text);
+        fabricCanvas.setActiveObject(text);
+    });
+
+    $("#btnAddBarcode").on("click", function () {
+        const rect = new fabric.Rect({
+            width:  Math.round(3 * CM_TO_PX),
+            height: Math.round(1 * CM_TO_PX),
+            fill:   '#000000',
+            opacity: 0.8
+        });
+        const label = new fabric.Text("BARCODE: ${barcode}", {
+            left: 5, top: 5, fontSize: 10, fill: "#ffffff"
+        });
+        const group = new fabric.Group([rect, label], {
+            left:         20,
+            top:          20,
+            controlType:  "barcode",
+            controlValue: "${barcode}"
+        });
+        fabricCanvas.add(group);
+        fabricCanvas.setActiveObject(group);
+    });
+
+    $("#btnAddQR").on("click", function () {
+        const rect = new fabric.Rect({
+            width:       Math.round(2 * CM_TO_PX),
+            height:      Math.round(2 * CM_TO_PX),
+            fill:        '#eeeeee',
+            stroke:      '#000000',
+            strokeWidth: 1
+        });
+        const label = new fabric.Text("QR", {
+            left: 5, top: 5, fontSize: 12, fill: "#333"
+        });
+        const group = new fabric.Group([rect, label], {
+            left:         20,
+            top:          20,
+            controlType:  "qrcode",
+            controlValue: "${qrValue}"
+        });
+        fabricCanvas.add(group);
+        fabricCanvas.setActiveObject(group);
+    });
+
+    function canvasToTemplateJson() {
+        const widthCm  = parseFloat($("#canvasWidth").val());
+        const heightCm = parseFloat($("#canvasHeight").val());
+
+        const controls = fabricCanvas.getObjects().map((obj, index) => ({
+            id:        (obj.controlType || "obj") + "_" + index,
+            type:      obj.controlType  || "text",
+            fieldType: obj.fieldType    || "STATIC",
+            value:     obj.controlValue || "",
+            x:         parseFloat((obj.left             / CM_TO_PX).toFixed(3)),
+            y:         parseFloat((obj.top              / CM_TO_PX).toFixed(3)),
+            width:     parseFloat((obj.getScaledWidth()  / CM_TO_PX).toFixed(3)),
+            height:    parseFloat((obj.getScaledHeight() / CM_TO_PX).toFixed(3)),
+            fontSize:  obj.fontSize || null
+        }));
+
+        return JSON.stringify({
+            size:     { width: widthCm, height: heightCm, unit: "cm" },
+            controls: controls
+        }, null, 2);
+    }
+
+    function templateJsonToCanvas(jsonStr) {
+        const template = JSON.parse(jsonStr);
+        const size = template.size;
+
+        $("#canvasWidth").val(size.width);
+        $("#canvasHeight").val(size.height);
+        initCanvas(size.width, size.height);
+
+        template.controls.forEach(ctrl => {
+            const x = ctrl.x * CM_TO_PX;
+            const y = ctrl.y * CM_TO_PX;
+            const w = ctrl.width  * CM_TO_PX;
+            const h = ctrl.height * CM_TO_PX;
+
+            if (ctrl.type === "text") {
+                const text = new fabric.IText(ctrl.value || "Static Text", {
+                    left:         x,
+                    top:          y,
+                    fontSize:     ctrl.fontSize || 14,
+                    controlType:  "text",
+                    controlValue: ctrl.value,
+                    fieldType:    ctrl.fieldType || "STATIC"
+                });
+                fabricCanvas.add(text);
+
+            } else if (ctrl.type === "barcode") {
+                const rect  = new fabric.Rect({ width: w, height: h, fill: '#000000', opacity: 0.8 });
+                const label = new fabric.Text("BARCODE: " + ctrl.value, { left: 5, top: 5, fontSize: 10, fill: "#ffffff" });
+                const group = new fabric.Group([rect, label], {
+                    left: x, top: y, controlType: "barcode", controlValue: ctrl.value
+                });
+                fabricCanvas.add(group);
+
+            } else if (ctrl.type === "qrcode") {
+                const rect  = new fabric.Rect({ width: w, height: h, fill: '#eeeeee', stroke: '#000', strokeWidth: 1 });
+                const label = new fabric.Text("QR", { left: 5, top: 5, fontSize: 12, fill: "#333" });
+                const group = new fabric.Group([rect, label], {
+                    left: x, top: y, controlType: "qrcode", controlValue: ctrl.value
+                });
+                fabricCanvas.add(group);
+            }
+        });
+
+        fabricCanvas.renderAll();
+    }
+
+    function openCreatePopup() {
+        currentId = null;
+        $("#templateName").val("");
+        $("#description").val("");
+        $("#isActive").prop("checked", true);
+        $("#canvasWidth").val(10);
+        $("#canvasHeight").val(5);
+        win.title("New Template");
+        win.center().open();
+        setTimeout(() => initCanvas(10, 5), 100);
+    }
+
+    function openEditPopup(id) {
+        currentId = id;
+        $.get("/api/labels/" + id, function (data) {
+            $("#templateName").val(data.templateName);
+            $("#description").val(data.description);
+            $("#isActive").prop("checked", data.isActive);
+            win.title("Edit Template");
+            win.center().open();
+            setTimeout(() => {
+                if (data.templateJson) {
+                    templateJsonToCanvas(data.templateJson);
+                } else {
+                    initCanvas(10, 5);
+                }
+            }, 100);
+        });
+    }
+
+    $("#btnSave").on("click", function () {
+        const templateName = $("#templateName").val();
+        if (!templateName) {
+            alert("Template Name is required.");
+            return;
+        }
+
+        const payload = {
+            templateName: templateName,
+            description:  $("#description").val(),
+            templateJson: canvasToTemplateJson(),
+            isActive:     $("#isActive").is(":checked")
+        };
+
+        const isEdit = currentId !== null;
+        $.ajax({
+            url:         isEdit ? "/api/labels/" + currentId : "/api/labels",
+            type:        isEdit ? "PUT" : "POST",
+            contentType: "application/json",
+            data:        JSON.stringify(payload),
+            success: function () {
+                win.close();
+                dataSource.read();
+            },
+            error: function () {
+                alert("Failed to save.");
+            }
+        });
+    });
+
+    $("#btnCreate").on("click", openCreatePopup);
+
+    $("#grid").on("click", ".btn-edit", function () {
+        openEditPopup($(this).data("id"));
+    });
+
+    $("#grid").on("click", ".btn-delete", function () {
+        const id = $(this).data("id");
+        if (!confirm("Are you sure you want to delete this template?")) return;
+        $.ajax({
+            url:  "/api/labels/" + id,
+            type: "DELETE",
+            success: function () { dataSource.read(); }
+        });
+    });
+
+    $("#btnCancel").on("click", function () { win.close(); });
+    $("#btnSearch").on("click", function () { dataSource.read(); });
+    $("#btnReset").on("click", function () {
+        $("#searchName").val("");
+        $("#searchActive").val("");
+        dataSource.read();
+    });
+
+    let currentPrintTemplateId = null;
+    let currentTemplateJson    = null;
+
+    const printWin = $("#printWindow").kendoWindow({
+        title:     "Print Label",
+        width:     "400px",
+        modal:     true,
+        visible:   false,
+        resizable: false,
+        actions:   ["Close"]
+    }).data("kendoWindow");
+
+    $("#grid").on("click", ".btn-print", function () {
+        currentPrintTemplateId = $(this).data("id");
+
+        $.get("/api/labels/" + currentPrintTemplateId, function (data) {
+            try {
+                currentTemplateJson = JSON.parse(data.templateJson);
+            } catch (e) {
+                alert("Invalid template JSON.");
+                return;
+            }
+            buildPrintFields(currentTemplateJson);
+            $("#printerName").val("");
+            printWin.center().open();
+        });
+    });
+
+    function buildPrintFields(template) {
+        const container = $("#printFields");
+        container.empty();
+
+        if (!template.controls || template.controls.length === 0) {
+            container.append('<p style="color:#999;">No fields defined in this template.</p>');
+            return;
+        }
+
+        const fields = [];
+        template.controls.forEach(ctrl => {
+            if (ctrl.fieldType && ctrl.fieldType !== "STATIC") {
+                // Avoid duplicates
+                if (!fields.find(f => f.fieldType === ctrl.fieldType)) {
+                    fields.push({ fieldType: ctrl.fieldType, type: ctrl.type });
+                }
+            }
+        });
+
+        if (fields.length === 0) {
+            container.append('<p style="color:#999;">No variable fields in this template.</p>');
+            return;
+        }
+
+        const table = $('<table style="width:100%; border-spacing: 0 8px;"></table>');
+        fields.forEach(f => {
+            const label = FIELD_TYPES.find(ft => ft.value === f.fieldType)?.text || f.fieldType;
+            const row = `
+            <tr>
+                <td style="width: 120px;"><label>${label}</label></td>
+                <td><input type="text" class="k-textbox print-field" data-field="${f.fieldType}" style="width: 100%;"/></td>
+            </tr>
+        `;
+            table.append(row);
+        });
+
+        container.append(table);
+    }
+
+    $("#btnPrintConfirm").on("click", function () {
+        const printData = {};
+        $(".print-field").each(function () {
+            const field = $(this).data("field");
+            const value = $(this).val();
+            printData[field] = value;
+        });
+
+        const payload = {
+            labelTemplateId: currentPrintTemplateId,
+            printData:       JSON.stringify(printData),
+            printerName:     $("#printerName").val()
+        };
+
+        $.ajax({
+            url:         "/api/print-queue",
+            type:        "POST",
+            contentType: "application/json",
+            data:        JSON.stringify(payload),
+            success: function () {
+                alert("Print request submitted successfully.");
+                printWin.close();
+            },
+            error: function () {
+                alert("Failed to submit print request.");
+            }
+        });
+    });
+
+    $("#btnPrintCancel").on("click", function () {
+        printWin.close();
+    });
+</script>
+
+</body>
+</html>
