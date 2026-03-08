@@ -44,4 +44,10 @@ public class PrintQueueController {
         return ResponseEntity.ok(printQueueService.error(id));
     }
 
+    // Fetch pending jobs (C# client polling)
+    @GetMapping("/pending")
+    public ResponseEntity<List<PrintQueueResponseDto>> getPending() {
+        return ResponseEntity.ok(printQueueService.getPending());
+    }
+
 }
