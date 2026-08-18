@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dev.moon5.dynamicforms.forms.template.TemplateMapper">
+
+	<insert id="insert" parameterType="dev.moon5.dynamicforms.forms.template.Template"
+			useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO template (category_id, name, content_html, created_by, created_at)
+		VALUES (#{categoryId}, #{name}, #{contentHtml}, #{createdBy}, #{createdAt})
+	</insert>
+
+	<select id="findById" resultType="dev.moon5.dynamicforms.forms.template.Template">
+		SELECT id, category_id, name, content_html, created_by, created_at, updated_by, updated_at
+		FROM template
+		WHERE id = #{id}
+	</select>
+
+	<select id="findByCategoryId" resultType="dev.moon5.dynamicforms.forms.template.Template">
+		SELECT id, category_id, name, content_html, created_by, created_at, updated_by, updated_at
+		FROM template
+		WHERE category_id = #{categoryId}
+		ORDER BY id
+	</select>
+
+	<select id="findAll" resultType="dev.moon5.dynamicforms.forms.template.Template">
+		SELECT id, category_id, name, content_html, created_by, created_at, updated_by, updated_at
+		FROM template
+		ORDER BY id
+	</select>
+
+	<update id="update" parameterType="dev.moon5.dynamicforms.forms.template.Template">
+		UPDATE template
+		SET name = #{name},
+			content_html = #{contentHtml},
+			updated_by = #{updatedBy},
+			updated_at = #{updatedAt}
+		WHERE id = #{id}
+	</update>
+
+	<delete id="deleteById">
+		DELETE FROM template WHERE id = #{id}
+	</delete>
+
+</mapper>

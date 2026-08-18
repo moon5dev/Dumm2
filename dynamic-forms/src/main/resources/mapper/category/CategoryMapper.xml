@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dev.moon5.dynamicforms.forms.category.CategoryMapper">
+
+	<insert id="insert" parameterType="dev.moon5.dynamicforms.forms.category.Category"
+			useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO category (parent_id, name, depth, sort_order, created_at)
+		VALUES (#{parentId}, #{name}, #{depth}, #{sortOrder}, #{createdAt})
+	</insert>
+
+	<select id="findById" resultType="dev.moon5.dynamicforms.forms.category.Category">
+		SELECT id, parent_id, name, depth, sort_order, created_at, updated_at
+		FROM category
+		WHERE id = #{id}
+	</select>
+
+	<select id="findAll" resultType="dev.moon5.dynamicforms.forms.category.Category">
+		SELECT id, parent_id, name, depth, sort_order, created_at, updated_at
+		FROM category
+		ORDER BY depth, sort_order, id
+	</select>
+
+	<update id="update" parameterType="dev.moon5.dynamicforms.forms.category.Category">
+		UPDATE category
+		SET name = #{name},
+			sort_order = #{sortOrder},
+			updated_at = #{updatedAt}
+		WHERE id = #{id}
+	</update>
+
+	<delete id="deleteById">
+		DELETE FROM category WHERE id = #{id}
+	</delete>
+
+	<select id="existsChildren" resultType="boolean">
+		SELECT COUNT(1) > 0
+		FROM category
+		WHERE parent_id = #{parentId}
+	</select>
+
+</mapper>
