@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Edit Template - Dynamic Forms</title>
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/vendor/jodit/jodit.fat.min.css}">
+</head>
+<body>
+
+<div class="d-flex" style="min-height: 100vh;">
+	<nav th:replace="~{admin/fragments/sidebar :: sidebar}"></nav>
+	<main class="p-4 flex-grow-1" style="max-width: 900px;">
+		<h4 class="mb-3">Edit Template</h4>
+
+		<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+		<form th:action="@{/admin/template/{id}(id=${template.id})}" method="post">
+			<div class="mb-3">
+				<label class="form-label">Category</label>
+				<select name="categoryId" class="form-select" required>
+					<option th:each="category : ${categories}"
+							th:value="${category.id}"
+							th:selected="${category.id == template.categoryId}"
+							th:text="${'　'.repeat(category.depth) + category.name}"></option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Name</label>
+				<input type="text" name="name" class="form-control" th:value="${template.name}" required autofocus>
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Content</label>
+				<textarea id="dcContentEditor" name="contentHtml" required th:text="${template.contentHtml}"></textarea>
+			</div>
+			<button type="submit" class="btn btn-primary">Save</button>
+			<a th:href="@{/admin/template}" class="btn btn-outline-secondary">Cancel</a>
+		</form>
+	</main>
+</div>
+
+<script th:src="@{/vendor/jodit/jodit.fat.min.js}" defer></script>
+<script th:src="@{/js/admin-editor.js}" defer></script>
+</body>
+</html>

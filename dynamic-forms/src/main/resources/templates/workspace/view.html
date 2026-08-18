@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Fill In - Dynamic Forms</title>
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/css/document.css}">
+	<style>
+		body { background: #e5e7eb; }
+		.dc-toolbar {
+			position: sticky;
+			top: 12px;
+			z-index: 10;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			align-items: center;
+			background: #fff;
+			border: 1px solid #d1d5db;
+			border-radius: 8px;
+			padding: 8px 12px;
+			margin: 12px auto;
+			width: 210mm;
+		}
+		.dc-toolbar select, .dc-toolbar input[type=color] {
+			height: 32px;
+		}
+	</style>
+</head>
+<body>
+
+<div class="dc-toolbar dc-no-print">
+	<button type="button" class="btn btn-sm btn-outline-secondary" data-cmd="bold"><b>B</b></button>
+	<button type="button" class="btn btn-sm btn-outline-secondary" data-cmd="italic"><i>I</i></button>
+	<button type="button" class="btn btn-sm btn-outline-secondary" data-cmd="underline"><u>U</u></button>
+	<button type="button" class="btn btn-sm btn-outline-secondary" data-cmd="justifyLeft">L</button>
+	<button type="button" class="btn btn-sm btn-outline-secondary" data-cmd="justifyCenter">C</button>
+	<button type="button" class="btn btn-sm btn-outline-secondary" data-cmd="justifyRight">R</button>
+	<select id="dcFontSize" class="form-select form-select-sm" style="width: 100px;">
+		<option value="2">Small</option>
+		<option value="3" selected>Normal</option>
+		<option value="5">Large</option>
+		<option value="7">Extra Large</option>
+	</select>
+	<input type="color" id="dcFontColor" value="#111827">
+	<button type="button" id="dcPrintBtn" class="btn btn-sm btn-primary ms-auto">Print / Save as PDF</button>
+</div>
+
+<div th:each="template : ${templates}" class="doc" contenteditable="false" th:utext="${template.contentHtml}"></div>
+
+<script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}" defer></script>
+<script th:src="@{/js/workspace.js}" defer></script>
+</body>
+</html>

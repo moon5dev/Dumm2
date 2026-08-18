@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="sidebar" class="border-end p-3" style="width: 220px;">
+	<h5 class="mb-4">Dynamic Forms Admin</h5>
+	<ul class="nav nav-pills flex-column gap-1">
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/category}">Categories</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/template}">Templates</a>
+		</li>
+	</ul>
+	<form th:action="@{/admin/logout}" method="post" class="mt-4">
+		<button type="submit" class="btn btn-outline-secondary btn-sm w-100">Log Out</button>
+	</form>
+</nav>
+
+</body>
+</html>

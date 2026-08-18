@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Admin Login - Dynamic Forms</title>
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}">
+	<style>
+		body {
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #f3f4f6;
+		}
+		.login-box {
+			width: 340px;
+		}
+	</style>
+</head>
+<body>
+
+<div class="login-box">
+	<h3 class="text-center mb-4">Admin Login</h3>
+
+	<div class="alert alert-danger" th:if="${error}">
+		Incorrect login ID or password.
+	</div>
+
+	<form th:action="@{/admin/login}" method="post">
+		<div class="mb-3">
+			<label class="form-label">Login ID</label>
+			<input type="text" name="loginId" class="form-control" required autofocus>
+		</div>
+		<div class="mb-3">
+			<label class="form-label">Password</label>
+			<input type="password" name="password" class="form-control" required>
+		</div>
+		<button type="submit" class="btn btn-primary w-100">Log In</button>
+	</form>
+</div>
+
+</body>
+</html>

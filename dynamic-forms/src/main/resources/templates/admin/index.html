@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Admin - Dynamic Forms</title>
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div class="d-flex" style="min-height: 100vh;">
+	<nav th:replace="~{admin/fragments/sidebar :: sidebar}"></nav>
+	<main class="p-4 flex-grow-1">
+		<h4>Admin Home</h4>
+		<p class="text-muted">Select an item to manage from the menu on the left.</p>
+	</main>
+</div>
+
+</body>
+</html>

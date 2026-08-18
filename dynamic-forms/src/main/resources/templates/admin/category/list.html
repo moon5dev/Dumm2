@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Categories - Dynamic Forms</title>
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div class="d-flex" style="min-height: 100vh;">
+	<nav th:replace="~{admin/fragments/sidebar :: sidebar}"></nav>
+	<main class="p-4 flex-grow-1">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h4 class="mb-0">Categories</h4>
+			<a th:href="@{/admin/category/new}" class="btn btn-primary btn-sm">+ New Category</a>
+		</div>
+
+		<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+		<table class="table table-hover align-middle">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th style="width: 100px;">Order</th>
+					<th style="width: 220px;"></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="category : ${categories}">
+					<td th:style="'padding-left:' + ${category.depth * 24 + 12} + 'px'"
+						th:text="${category.name}"></td>
+					<td th:text="${category.sortOrder}"></td>
+					<td class="text-end">
+						<a class="btn btn-outline-secondary btn-sm"
+						   th:href="@{/admin/category/new(parentId=${category.id})}">Add Child</a>
+						<a class="btn btn-outline-secondary btn-sm"
+						   th:href="@{/admin/category/{id}/edit(id=${category.id})}">Edit</a>
+						<form th:action="@{/admin/category/{id}/delete(id=${category.id})}"
+							  method="post" class="d-inline"
+							  onsubmit="return confirm('Delete this category?');">
+							<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+						</form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</main>
+</div>
+
+</body>
+</html>
