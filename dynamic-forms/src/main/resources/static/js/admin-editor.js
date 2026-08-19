@@ -2,6 +2,13 @@
 	const textarea = document.getElementById('dcContentEditor');
 	if (!textarea || typeof Jodit === 'undefined') return;
 
+	function insertRegionNode(editor, node) {
+		editor.selection.insertNode(node);
+		if (node.nextSibling && node.nextSibling.nodeName === 'BR') {
+			node.nextSibling.remove();
+		}
+	}
+
 	function openOptionListDialog(title, onConfirm) {
 		const overlay = document.createElement('div');
 		overlay.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center';
@@ -115,7 +122,7 @@
 				const span = editor.createInside.element('span');
 				Object.entries(attributes).forEach(([key, value]) => span.setAttribute(key, value));
 				span.appendChild(editor.editorDocument.createTextNode('​'));
-				editor.selection.insertNode(span);
+				insertRegionNode(editor, span);
 			} else {
 				editor.selection.commitStyle({ element: 'span', attributes });
 			}
@@ -137,7 +144,7 @@
 			placeholder.className = 'dc-region-placeholder';
 			placeholder.appendChild(editor.editorDocument.createTextNode('Click, then paste an image with Ctrl+V'));
 			div.appendChild(placeholder);
-			editor.selection.insertNode(div);
+			insertRegionNode(editor, div);
 			editor.synchronizeValues();
 		}
 	};
@@ -162,7 +169,7 @@
 				labelEl.appendChild(editor.editorDocument.createTextNode(' ' + label));
 				wrapper.appendChild(labelEl);
 
-				editor.selection.insertNode(wrapper);
+				insertRegionNode(editor, wrapper);
 				editor.synchronizeValues();
 			}, 'Option');
 		}
@@ -191,7 +198,7 @@
 					select.appendChild(opt);
 				});
 
-				editor.selection.insertNode(select);
+				insertRegionNode(editor, select);
 				editor.synchronizeValues();
 			});
 		}
