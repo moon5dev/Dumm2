@@ -1,6 +1,7 @@
 package dev.moon5.dynamicforms.forms.template;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,6 +24,30 @@ public class TemplateService {
 
 	public List<Template> getAll() {
 		return templateMapper.findAll();
+	}
+
+	public List<Template> getAll(Long categoryId) {
+		if (categoryId == null) {
+			return getAll();
+		}
+		List<Long> categoryIds = categoryService.getSelfAndDescendantIds(categoryId);
+		return templateMapper.findAll().stream()
+			.filter(t -> categoryIds.contains(t.getCategoryId()))
+			.toList();
+	}
+
+	public Map<Long, Long> getCategoryTemplateCounts() {
+		Map<Long, Long> directCounts = templateMapper.findAll().stream()
+			.collect(Collectors.groupingBy(Template::getCategoryId, Collectors.counting()));
+
+		Map<Long, Long> rollupCounts = new HashMap<>();
+		for (Category category : categoryService.getTreeOrdered()) {
+			long total = categoryService.getSelfAndDescendantIds(category.getId()).stream()
+				.mapToLong(id -> directCounts.getOrDefault(id, 0L))
+				.sum();
+			rollupCounts.put(category.getId(), total);
+		}
+		return rollupCounts;
 	}
 
 	public Template getById(Long id) {

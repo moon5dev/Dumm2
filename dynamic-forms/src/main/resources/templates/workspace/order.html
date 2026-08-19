@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Set Print Order - Dynamic Forms</title>
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div class="container py-4" style="max-width: 720px;">
+	<h4 class="mb-3">Set Print Order</h4>
+	<p class="text-muted">Use the arrows to arrange the order these will be combined and printed in.</p>
+
+	<ul id="dcOrderList" class="list-group mb-3">
+		<li class="list-group-item d-flex justify-content-between align-items-center"
+			th:each="template : ${templates}" th:data-id="${template.id}">
+			<span th:text="${template.name}"></span>
+			<span>
+				<button type="button" class="btn btn-sm btn-outline-secondary dc-move-up">↑</button>
+				<button type="button" class="btn btn-sm btn-outline-secondary dc-move-down">↓</button>
+			</span>
+		</li>
+	</ul>
+
+	<form id="dcOrderForm" th:action="@{/workspace/view}" method="get"></form>
+	<button type="button" id="dcContinueBtn" class="btn btn-primary">Continue</button>
+	<a th:href="@{/workspace}" class="btn btn-outline-secondary">Back</a>
+</div>
+
+<script th:src="@{/js/workspace-order.js}" defer></script>
+</body>
+</html>

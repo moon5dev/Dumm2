@@ -7,24 +7,50 @@
 </head>
 <body>
 
-<div class="container py-4" style="max-width: 720px;">
+<div class="container py-4" th:attr="data-base-url=@{/workspace},data-selected-ids=${selectedIdsCsv}">
 	<h4 class="mb-3">Select Templates</h4>
 	<p class="text-muted">Select one or more templates to fill in.</p>
 
-	<form th:action="@{/workspace/view}" method="get">
-		<div class="list-group mb-3">
-			<label class="list-group-item" th:each="template : ${templates}">
-				<input class="form-check-input me-2" type="checkbox"
-					   name="templateId" th:value="${template.id}">
-				<span th:text="${template.name}"></span>
-				<span class="text-muted small ms-2"
-					  th:text="'(' + ${categoryNames.get(template.categoryId)} + ')'"></span>
-			</label>
+	<div class="d-flex gap-3">
+		<nav class="border rounded" style="width: 220px; flex-shrink: 0; height: fit-content;">
+			<div class="list-group list-group-flush">
+				<button type="button"
+						class="list-group-item list-group-item-action d-flex justify-content-between align-items-center dc-category-link"
+						th:classappend="${selectedCategoryId == null} ? 'active'">
+					<span>All templates</span>
+					<span class="text-muted small" th:text="${totalCount}"></span>
+				</button>
+				<button type="button"
+						class="list-group-item list-group-item-action d-flex justify-content-between align-items-center dc-category-link"
+						th:each="category : ${categories}"
+						th:data-category-id="${category.id}"
+						th:classappend="${selectedCategoryId != null and selectedCategoryId == category.id} ? 'active'"
+						th:style="'padding-left:' + ${category.depth * 24 + 12} + 'px'">
+					<span th:text="${category.name}"></span>
+					<span class="text-muted small" th:text="${categoryCounts.get(category.id) ?: 0}"></span>
+				</button>
+			</div>
+		</nav>
+
+		<div class="flex-grow-1">
+			<form th:action="@{/workspace/order}" method="get">
+				<div class="list-group mb-3">
+					<label class="list-group-item" th:each="template : ${templates}">
+						<input class="form-check-input me-2" type="checkbox"
+							   name="templateId" th:value="${template.id}"
+							   th:checked="${selectedIds.contains(template.id)}">
+						<span th:text="${template.name}"></span>
+						<span class="text-muted small ms-2"
+							  th:text="'(' + ${categoryNames.get(template.categoryId)} + ')'"></span>
+					</label>
+				</div>
+				<button type="submit" class="btn btn-primary">Start</button>
+				<a th:href="@{/}" class="btn btn-outline-secondary">Cancel</a>
+			</form>
 		</div>
-		<button type="submit" class="btn btn-primary">Start</button>
-		<a th:href="@{/}" class="btn btn-outline-secondary">Cancel</a>
-	</form>
+	</div>
 </div>
 
+<script th:src="@{/js/workspace-select.js}" defer></script>
 </body>
 </html>

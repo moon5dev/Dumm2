@@ -1,6 +1,9 @@
 package dev.moon5.dynamicforms.forms.workspace;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,10 +25,34 @@ public class WorkspaceController {
 	}
 
 	@GetMapping("")
-	public String select(Model model) {
-		model.addAttribute("templates", templateService.getAll());
+	public String select(
+			@RequestParam(required = false) Long categoryId,
+			@RequestParam(required = false) List<Long> selected,
+			Model model) {
+		model.addAttribute("templates", templateService.getAll(categoryId));
 		model.addAttribute("categoryNames", templateService.getCategoryNameMap());
+		model.addAttribute("categories", templateService.getCategoriesForSelect());
+		model.addAttribute("categoryCounts", templateService.getCategoryTemplateCounts());
+		model.addAttribute("totalCount", templateService.getAll().size());
+		model.addAttribute("selectedCategoryId", categoryId);
+		model.addAttribute("selectedIds", selected == null ? Set.of() : new HashSet<>(selected));
+		model.addAttribute("selectedIdsCsv", selected == null ? "" :
+			selected.stream().map(String::valueOf).collect(Collectors.joining(",")));
 		return "workspace/select";
+	}
+
+	@GetMapping("/order")
+	public String order(@RequestParam List<Long> templateId, Model model) {
+		if (templateId.size() <= 1) {
+			return "redirect:/workspace/view?templateId=" + templateId.get(0);
+		}
+
+		List<Template> templates = templateId.stream()
+			.map(templateService::getById)
+			.filter(t -> t != null)
+			.toList();
+		model.addAttribute("templates", templates);
+		return "workspace/order";
 	}
 
 	@GetMapping("/view")

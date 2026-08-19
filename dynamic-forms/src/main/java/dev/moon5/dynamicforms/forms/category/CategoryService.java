@@ -54,6 +54,24 @@ public class CategoryService {
 		return categoryMapper.findById(id);
 	}
 
+	public List<Long> getSelfAndDescendantIds(Long categoryId) {
+		List<Category> all = categoryMapper.findAll();
+		Map<Long, List<Category>> byParentId = all.stream()
+			.filter(c -> c.getParentId() != null)
+			.collect(Collectors.groupingBy(Category::getParentId));
+
+		List<Long> ids = new ArrayList<>();
+		collectIds(categoryId, byParentId, ids);
+		return ids;
+	}
+
+	private void collectIds(Long id, Map<Long, List<Category>> byParentId, List<Long> ids) {
+		ids.add(id);
+		for (Category child : byParentId.getOrDefault(id, List.of())) {
+			collectIds(child.getId(), byParentId, ids);
+		}
+	}
+
 	public void create(Long parentId, String name, Integer sortOrder) {
 		int depth = 0;
 		if (parentId != null) {
