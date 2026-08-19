@@ -3,7 +3,9 @@
 <body>
 
 <nav th:fragment="sidebar" class="border-end p-3" style="width: 220px;">
-	<h5 class="mb-4">Dynamic Forms Admin</h5>
+	<a th:href="@{/}" class="text-decoration-none text-body">
+		<h5 class="mb-4">Dynamic Forms Admin</h5>
+	</a>
 	<ul class="nav nav-pills flex-column gap-1">
 		<li class="nav-item">
 			<a class="nav-link" th:href="@{/admin/category}">Categories</a>

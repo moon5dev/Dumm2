@@ -43,7 +43,8 @@
 		<option value="7">Extra Large</option>
 	</select>
 	<input type="color" id="dcFontColor" value="#111827">
-	<button type="button" id="dcPrintBtn" class="btn btn-sm btn-primary ms-auto">Print / Save as PDF</button>
+	<a th:href="@{/}" class="btn btn-sm btn-outline-secondary ms-auto">Home</a>
+	<button type="button" id="dcPrintBtn" class="btn btn-sm btn-primary">Print / Save as PDF</button>
 </div>
 
 <div th:each="template : ${templates}" class="doc" contenteditable="false" th:utext="${template.contentHtml}"></div>
