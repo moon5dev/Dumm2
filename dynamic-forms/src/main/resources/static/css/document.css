@@ -104,6 +104,10 @@ table.form-table th {
 @media print {
 	body { background: #fff; padding: 0; }
 	.dc-toolbar, .dc-no-print { display: none !important; }
+	.doc, .doc * {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
 	.doc {
 		box-shadow: none;
 		width: auto;
