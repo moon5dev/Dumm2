@@ -33,20 +33,18 @@
 		</nav>
 
 		<div class="flex-grow-1">
-			<form th:action="@{/workspace/order}" method="get">
-				<div class="list-group mb-3">
-					<label class="list-group-item" th:each="template : ${templates}">
-						<input class="form-check-input me-2" type="checkbox"
-							   name="templateId" th:value="${template.id}"
-							   th:checked="${selectedIds.contains(template.id)}">
-						<span th:text="${template.name}"></span>
-						<span class="text-muted small ms-2"
-							  th:text="'(' + ${categoryNames.get(template.categoryId)} + ')'"></span>
-					</label>
-				</div>
-				<button type="submit" class="btn btn-primary">Start</button>
-				<a th:href="@{/}" class="btn btn-outline-secondary">Cancel</a>
-			</form>
+			<div class="list-group mb-3">
+				<label class="list-group-item" th:each="template : ${templates}">
+					<input class="form-check-input me-2" type="checkbox"
+						   name="templateId" th:value="${template.id}"
+						   th:checked="${selectedIds.contains(template.id)}">
+					<span th:text="${template.name}"></span>
+					<span class="text-muted small ms-2"
+						  th:text="'(' + ${categoryNames.get(template.categoryId)} + ')'"></span>
+				</label>
+			</div>
+			<button type="button" id="dcStartBtn" class="btn btn-primary">Start</button>
+			<a th:href="@{/}" class="btn btn-outline-secondary">Cancel</a>
 		</div>
 	</div>
 </div>

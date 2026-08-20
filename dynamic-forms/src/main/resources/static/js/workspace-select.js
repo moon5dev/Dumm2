@@ -23,4 +23,17 @@
 			window.location.href = baseUrl + (params.toString() ? '?' + params.toString() : '');
 		});
 	});
+
+	const startBtn = document.getElementById('dcStartBtn');
+	if (startBtn) {
+		startBtn.addEventListener('click', () => {
+			if (selected.size === 0) {
+				alert('Select at least one template first.');
+				return;
+			}
+			const params = new URLSearchParams();
+			selected.forEach((id) => params.append('templateId', id));
+			window.location.href = baseUrl + '/order?' + params.toString();
+		});
+	}
 })();
