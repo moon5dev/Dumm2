@@ -42,7 +42,8 @@ table.form-table th {
 	overflow-wrap: anywhere;
 	word-break: break-word;
 }
-.dc-region:focus {
+.dc-region:focus,
+.dc-region.dc-drag-over {
 	border: 1px solid var(--dc-region-focus-border);
 	background: var(--dc-region-focus-bg);
 }
@@ -62,7 +63,8 @@ table.form-table th {
 	cursor: text;
 	overflow: hidden;
 }
-.dc-region-image:focus {
+.dc-region-image:focus,
+.dc-region-image.dc-drag-over {
 	border: 1px solid var(--dc-region-focus-border);
 	background: var(--dc-region-focus-bg);
 }

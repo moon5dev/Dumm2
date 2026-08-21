@@ -64,6 +64,36 @@
 		});
 	}
 
+	function insertImageFile(file, targetRegion) {
+		if (!file || file.type.indexOf('image') !== 0) return false;
+
+		const reader = new FileReader();
+		reader.onload = function (ev) {
+			const dataUrl = ev.target.result;
+			const img = document.createElement('img');
+			img.src = dataUrl;
+
+			if (targetRegion.classList.contains('dc-region-image')) {
+				targetRegion.innerHTML = '';
+				targetRegion.appendChild(img);
+				targetRegion.dispatchEvent(new CustomEvent('dc:image-set'));
+			} else {
+				img.style.maxWidth = '100%';
+				const sel = window.getSelection();
+				if (sel.rangeCount) {
+					const range = sel.getRangeAt(0);
+					range.deleteContents();
+					range.insertNode(img);
+					range.collapse(false);
+				} else {
+					targetRegion.appendChild(img);
+				}
+			}
+		};
+		reader.readAsDataURL(file);
+		return true;
+	}
+
 	function handleImagePaste(e, targetRegion) {
 		const items = (e.clipboardData || window.clipboardData).items;
 		if (!items) return;
@@ -71,40 +101,34 @@
 
 		for (const item of items) {
 			if (item.type.indexOf('image') === 0) {
-				handled = true;
-				const blob = item.getAsFile();
-				const reader = new FileReader();
-				reader.onload = function (ev) {
-					const dataUrl = ev.target.result;
-					const img = document.createElement('img');
-					img.src = dataUrl;
-
-					if (targetRegion.classList.contains('dc-region-image')) {
-						targetRegion.innerHTML = '';
-						targetRegion.appendChild(img);
-						targetRegion.dispatchEvent(new CustomEvent('dc:image-set'));
-					} else {
-						img.style.maxWidth = '100%';
-						const sel = window.getSelection();
-						if (sel.rangeCount) {
-							const range = sel.getRangeAt(0);
-							range.deleteContents();
-							range.insertNode(img);
-							range.collapse(false);
-						} else {
-							targetRegion.appendChild(img);
-						}
-					}
-				};
-				reader.readAsDataURL(blob);
+				handled = insertImageFile(item.getAsFile(), targetRegion) || handled;
 			}
 		}
 
 		if (handled) e.preventDefault();
 	}
 
+	function handleImageDrop(e, targetRegion) {
+		const files = e.dataTransfer && e.dataTransfer.files;
+		if (!files || !files.length) return;
+		let handled = false;
+
+		for (const file of files) {
+			handled = insertImageFile(file, targetRegion) || handled;
+		}
+
+		if (handled) e.preventDefault();
+		targetRegion.classList.remove('dc-drag-over');
+	}
+
 	document.querySelectorAll('.dc-region-image, .dc-region[data-dc-region="text"]').forEach(region => {
 		region.addEventListener('paste', (e) => handleImagePaste(e, region));
+		region.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			region.classList.add('dc-drag-over');
+		});
+		region.addEventListener('dragleave', () => region.classList.remove('dc-drag-over'));
+		region.addEventListener('drop', (e) => handleImageDrop(e, region));
 	});
 
 	document.querySelectorAll('.dc-region-image').forEach(region => {
