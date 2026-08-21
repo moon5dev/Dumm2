@@ -10,16 +10,21 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import dev.moon5.dynamicforms.forms.template.TemplateMapper;
+
 @Service
 public class CategoryService {
 
 	private final CategoryMapper categoryMapper;
+	private final TemplateMapper templateMapper;
 	private final int maxDepth;
 
 	public CategoryService(
 			CategoryMapper categoryMapper,
+			TemplateMapper templateMapper,
 			@Value("${dynamic-forms.ui.category-max-depth}") int maxDepth) {
 		this.categoryMapper = categoryMapper;
+		this.templateMapper = templateMapper;
 		this.maxDepth = maxDepth;
 	}
 
@@ -108,6 +113,9 @@ public class CategoryService {
 	public void delete(Long id) {
 		if (categoryMapper.existsChildren(id)) {
 			throw new IllegalStateException("Cannot delete: this category has child categories. Delete the children first.");
+		}
+		if (templateMapper.existsByCategoryId(id)) {
+			throw new IllegalStateException("Cannot delete: this category has templates. Delete or move them first.");
 		}
 		categoryMapper.deleteById(id);
 	}

@@ -40,4 +40,10 @@
 		DELETE FROM template WHERE id = #{id}
 	</delete>
 
+	<select id="existsByCategoryId" resultType="boolean">
+		SELECT COUNT(1) > 0
+		FROM template
+		WHERE category_id = #{categoryId}
+	</select>
+
 </mapper>
