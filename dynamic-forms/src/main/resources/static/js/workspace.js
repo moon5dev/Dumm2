@@ -52,7 +52,16 @@
 	if (fontSizeSel) {
 		fontSizeSel.addEventListener('change', (e) => {
 			if (!restoreRegionSelection()) return;
-			document.execCommand('fontSize', false, e.target.value);
+			const px = e.target.value;
+			// execCommand only understands legacy sizes 1-7, so use a placeholder
+			// size then swap the resulting <font size="7"> tags for real px spans.
+			document.execCommand('fontSize', false, '7');
+			savedRegion.querySelectorAll('font[size="7"]').forEach((f) => {
+				const span = document.createElement('span');
+				span.style.fontSize = px + 'px';
+				while (f.firstChild) span.appendChild(f.firstChild);
+				f.parentNode.replaceChild(span, f);
+			});
 		});
 	}
 
@@ -64,6 +73,41 @@
 		});
 	}
 
+	function makeImageResizable(img) {
+		const handle = document.createElement('span');
+		handle.className = 'dc-img-resize-handle dc-no-print';
+		handle.setAttribute('aria-label', 'Resize image');
+
+		handle.addEventListener('mousedown', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+
+			const startX = e.clientX;
+			const startWidth = img.offsetWidth;
+			const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : (img.offsetWidth / img.offsetHeight || 1);
+
+			function onMove(ev) {
+				const newWidth = Math.max(30, startWidth + (ev.clientX - startX));
+				img.style.maxWidth = 'none';
+				img.style.maxHeight = 'none';
+				img.style.width = newWidth + 'px';
+				img.style.height = (newWidth / ratio) + 'px';
+			}
+			function onUp() {
+				document.removeEventListener('mousemove', onMove);
+				document.removeEventListener('mouseup', onUp);
+			}
+			document.addEventListener('mousemove', onMove);
+			document.addEventListener('mouseup', onUp);
+		});
+
+		const wrap = document.createElement('span');
+		wrap.className = 'dc-img-resize-wrap';
+		wrap.appendChild(img);
+		wrap.appendChild(handle);
+		return wrap;
+	}
+
 	function insertImageFile(file, targetRegion) {
 		if (!file || file.type.indexOf('image') !== 0) return false;
 
@@ -72,10 +116,11 @@
 			const dataUrl = ev.target.result;
 			const img = document.createElement('img');
 			img.src = dataUrl;
+			const wrap = makeImageResizable(img);
 
 			if (targetRegion.classList.contains('dc-region-image')) {
 				targetRegion.innerHTML = '';
-				targetRegion.appendChild(img);
+				targetRegion.appendChild(wrap);
 				targetRegion.dispatchEvent(new CustomEvent('dc:image-set'));
 			} else {
 				img.style.maxWidth = '100%';
@@ -83,10 +128,10 @@
 				if (sel.rangeCount) {
 					const range = sel.getRangeAt(0);
 					range.deleteContents();
-					range.insertNode(img);
+					range.insertNode(wrap);
 					range.collapse(false);
 				} else {
-					targetRegion.appendChild(img);
+					targetRegion.appendChild(wrap);
 				}
 			}
 		};
