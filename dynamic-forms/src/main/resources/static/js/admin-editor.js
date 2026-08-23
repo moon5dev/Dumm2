@@ -4,8 +4,20 @@
 
 	function insertRegionNode(editor, node) {
 		editor.selection.insertNode(node);
-		if (node.nextSibling && node.nextSibling.nodeName === 'BR') {
-			node.nextSibling.remove();
+
+		// Jodit can leave a stray zero-width text node (caret anchor) between
+		// the inserted region and a trailing <br>; skip past those before
+		// removing the <br>, otherwise the <br> check below never matches and
+		// the invisible text node is left behind, creating an empty extra line.
+		const emptyTextPattern = new RegExp('^[\\s\\uFEFF\\u200B]*$');
+		let next = node.nextSibling;
+		while (next && next.nodeType === 3 && emptyTextPattern.test(next.nodeValue)) {
+			const empty = next;
+			next = next.nextSibling;
+			empty.remove();
+		}
+		if (next && next.nodeName === 'BR') {
+			next.remove();
 		}
 	}
 

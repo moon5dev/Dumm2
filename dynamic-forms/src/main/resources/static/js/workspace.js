@@ -191,6 +191,7 @@
 			region.innerHTML = placeholderHTML;
 			region.appendChild(removeBtn);
 			removeBtn.hidden = true;
+			region.classList.remove('dc-has-image');
 		}
 
 		removeBtn.addEventListener('click', (e) => {
@@ -204,6 +205,7 @@
 		region.addEventListener('dc:image-set', () => {
 			region.appendChild(removeBtn);
 			removeBtn.hidden = false;
+			region.classList.add('dc-has-image');
 		});
 
 		region.addEventListener('keydown', (e) => {
