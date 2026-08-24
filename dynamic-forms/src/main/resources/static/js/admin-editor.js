@@ -216,6 +216,60 @@
 		}
 	};
 
+	function findSelectedTable(editor) {
+		const sel = editor.editorWindow.getSelection();
+		if (!sel || !sel.rangeCount) return null;
+		const range = sel.getRangeAt(0);
+		const node = range.commonAncestorContainer;
+		const el = node.nodeType === 3 ? node.parentElement : node;
+		return el ? el.closest('table') : null;
+	}
+
+	function isBlankParagraph(node) {
+		if (!node || node.nodeType !== 1 || node.tagName !== 'P') return false;
+		return node.textContent.trim() === '' && !node.querySelector('img, table, input, select, textarea');
+	}
+
+	function removeBlankParagraphsBetweenJoinedTables(table) {
+		let next = table.nextSibling;
+		const blankAfter = [];
+		while (isBlankParagraph(next)) {
+			blankAfter.push(next);
+			next = next.nextSibling;
+		}
+		if (next && next.nodeType === 1 && next.matches('table.dc-joined-table')) {
+			blankAfter.forEach((node) => node.remove());
+		}
+
+		let prev = table.previousSibling;
+		const blankBefore = [];
+		while (isBlankParagraph(prev)) {
+			blankBefore.push(prev);
+			prev = prev.previousSibling;
+		}
+		if (prev && prev.nodeType === 1 && prev.matches('table.dc-joined-table')) {
+			blankBefore.forEach((node) => node.remove());
+		}
+	}
+
+	const dcJoinedTableButton = {
+		name: 'dcJoinedTable',
+		text: 'Join Table',
+		tooltip: 'Toggle no-gap spacing for the selected table',
+		exec: (editor) => {
+			const table = findSelectedTable(editor);
+			if (!table) {
+				editor.message.info('Place the cursor inside a table first.');
+				return;
+			}
+			table.classList.toggle('dc-joined-table');
+			if (table.classList.contains('dc-joined-table')) {
+				removeBlankParagraphsBetweenJoinedTables(table);
+			}
+			editor.synchronizeValues();
+		}
+	};
+
 	function setUpRegionDeleteButton(editorInstance) {
 		const deleteBtn = document.createElement('button');
 		deleteBtn.type = 'button';
@@ -283,7 +337,7 @@
 		height: 500,
 		iframe: true,
 		iframeCSSLinks: ['/css/document.css'],
-		allowResizeTags: new Set(['table', 'img']),
+		allowResizeTags: new Set(['table', 'td', 'th', 'img']),
 		buttons: [
 			'source', '|',
 			'bold', 'italic', 'underline', '|',
@@ -291,7 +345,7 @@
 			'font', 'fontsize', 'brush', '|',
 			'align', '|',
 			'table', 'image', '|',
-			dcRegionTextButton, dcRegionImageButton, dcRegionCheckboxButton, dcRegionSelectButton, '|',
+			dcJoinedTableButton, dcRegionTextButton, dcRegionImageButton, dcRegionCheckboxButton, dcRegionSelectButton, '|',
 			'undo', 'redo', 'eraser'
 		],
 		events: {
