@@ -29,7 +29,8 @@
 
 	<update id="update" parameterType="dev.moon5.dynamicforms.forms.template.Template">
 		UPDATE template
-		SET name = #{name},
+		SET category_id = #{categoryId},
+			name = #{name},
 			content_html = #{contentHtml},
 			updated_by = #{updatedBy},
 			updated_at = #{updatedAt}

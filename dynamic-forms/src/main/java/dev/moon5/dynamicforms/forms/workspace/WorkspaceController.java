@@ -42,25 +42,36 @@ public class WorkspaceController {
 	}
 
 	@GetMapping("/order")
-	public String order(@RequestParam List<Long> templateId, Model model) {
-		if (templateId.size() <= 1) {
-			return "redirect:/workspace/view?templateId=" + templateId.get(0);
+	public String order(@RequestParam(required = false) List<Long> templateId, Model model) {
+		if (templateId == null || templateId.isEmpty()) {
+			return "redirect:/workspace";
 		}
-
 		List<Template> templates = templateId.stream()
 			.map(templateService::getById)
 			.filter(t -> t != null)
 			.toList();
+		if (templates.isEmpty()) {
+			return "redirect:/workspace";
+		}
+		if (templates.size() == 1) {
+			return "redirect:/workspace/view?templateId=" + templates.get(0).getId();
+		}
 		model.addAttribute("templates", templates);
 		return "workspace/order";
 	}
 
 	@GetMapping("/view")
-	public String view(@RequestParam List<Long> templateId, Model model) {
+	public String view(@RequestParam(required = false) List<Long> templateId, Model model) {
+		if (templateId == null || templateId.isEmpty()) {
+			return "redirect:/workspace";
+		}
 		List<Template> templates = templateId.stream()
 			.map(templateService::getById)
 			.filter(t -> t != null)
 			.toList();
+		if (templates.isEmpty()) {
+			return "redirect:/workspace";
+		}
 		model.addAttribute("templates", templates);
 		return "workspace/view";
 	}

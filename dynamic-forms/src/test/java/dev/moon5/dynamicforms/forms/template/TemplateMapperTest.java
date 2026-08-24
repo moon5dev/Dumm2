@@ -97,7 +97,15 @@ class TemplateMapperTest {
 	void updateChangesContentAndUpdatedBy() {
 		Template template = newTemplate("Original", "<div>Original content</div>");
 		templateMapper.insert(template);
+		Category movedCategory = new Category();
+		movedCategory.setParentId(null);
+		movedCategory.setName("Moved Category");
+		movedCategory.setDepth(0);
+		movedCategory.setSortOrder(2);
+		movedCategory.setCreatedAt(LocalDateTime.now());
+		categoryMapper.insert(movedCategory);
 
+		template.setCategoryId(movedCategory.getId());
 		template.setName("Updated");
 		template.setContentHtml("<div>Updated content</div>");
 		template.setUpdatedBy(userId);
@@ -105,6 +113,7 @@ class TemplateMapperTest {
 		templateMapper.update(template);
 
 		Template found = templateMapper.findById(template.getId());
+		assertThat(found.getCategoryId()).isEqualTo(movedCategory.getId());
 		assertThat(found.getName()).isEqualTo("Updated");
 		assertThat(found.getContentHtml()).isEqualTo("<div>Updated content</div>");
 		assertThat(found.getUpdatedBy()).isEqualTo(userId);

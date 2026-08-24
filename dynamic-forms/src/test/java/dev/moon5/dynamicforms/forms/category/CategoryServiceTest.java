@@ -13,6 +13,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import dev.moon5.dynamicforms.forms.template.TemplateMapper;
+
 class CategoryServiceTest {
 
 	@Test
@@ -25,7 +27,7 @@ class CategoryServiceTest {
 		Category childOfB = category(4L, 2L, "B-1", 1, 1);
 		when(mapper.findAll()).thenReturn(List.of(rootA, rootB, childOfA, childOfB));
 
-		CategoryService service = new CategoryService(mapper, 3);
+		CategoryService service = newService(mapper);
 		List<Category> ordered = service.getTreeOrdered();
 
 		assertThat(ordered).extracting(Category::getName)
@@ -45,7 +47,7 @@ class CategoryServiceTest {
 	@Test
 	void rootCategoryGetsDepthZero() {
 		CategoryMapper mapper = mock(CategoryMapper.class);
-		CategoryService service = new CategoryService(mapper, 2);
+		CategoryService service = newService(mapper);
 
 		service.create(null, "Top", 1);
 
@@ -62,7 +64,7 @@ class CategoryServiceTest {
 		parent.setId(1L);
 		parent.setDepth(0);
 		when(mapper.findById(1L)).thenReturn(parent);
-		CategoryService service = new CategoryService(mapper, 2);
+		CategoryService service = newService(mapper);
 
 		service.create(1L, "Mid", 1);
 
@@ -78,7 +80,7 @@ class CategoryServiceTest {
 		parent.setId(1L);
 		parent.setDepth(1);
 		when(mapper.findById(1L)).thenReturn(parent);
-		CategoryService service = new CategoryService(mapper, 2);
+		CategoryService service = newService(mapper);
 
 		assertThatThrownBy(() -> service.create(1L, "Sub", 1))
 			.isInstanceOf(IllegalStateException.class);
@@ -89,7 +91,7 @@ class CategoryServiceTest {
 	void deleteRejectedWhenChildrenExist() {
 		CategoryMapper mapper = mock(CategoryMapper.class);
 		when(mapper.existsChildren(1L)).thenReturn(true);
-		CategoryService service = new CategoryService(mapper, 2);
+		CategoryService service = newService(mapper);
 
 		assertThatThrownBy(() -> service.delete(1L))
 			.isInstanceOf(IllegalStateException.class);
@@ -100,10 +102,14 @@ class CategoryServiceTest {
 	void deleteAllowedWhenNoChildren() {
 		CategoryMapper mapper = mock(CategoryMapper.class);
 		when(mapper.existsChildren(1L)).thenReturn(false);
-		CategoryService service = new CategoryService(mapper, 2);
+		CategoryService service = newService(mapper);
 
 		service.delete(1L);
 
 		verify(mapper).deleteById(1L);
+	}
+
+	private CategoryService newService(CategoryMapper mapper) {
+		return new CategoryService(mapper, mock(TemplateMapper.class), 2);
 	}
 }

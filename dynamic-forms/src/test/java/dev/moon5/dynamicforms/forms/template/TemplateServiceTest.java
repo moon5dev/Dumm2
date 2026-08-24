@@ -17,7 +17,7 @@ class TemplateServiceTest {
 	@Test
 	void createSetsFieldsAndInsertsTemplate() {
 		TemplateMapper templateMapper = mock(TemplateMapper.class);
-		CategoryService categoryService = new CategoryService(mock(CategoryMapper.class), 2);
+		CategoryService categoryService = newCategoryService(templateMapper);
 		TemplateService service = new TemplateService(templateMapper, categoryService);
 
 		service.create(1L, "Inspection Report", "<div>Content</div>", 10L);
@@ -36,7 +36,7 @@ class TemplateServiceTest {
 	void updateRejectsUnknownTemplate() {
 		TemplateMapper templateMapper = mock(TemplateMapper.class);
 		when(templateMapper.findById(99L)).thenReturn(null);
-		CategoryService categoryService = new CategoryService(mock(CategoryMapper.class), 2);
+		CategoryService categoryService = newCategoryService(templateMapper);
 		TemplateService service = new TemplateService(templateMapper, categoryService);
 
 		assertThatThrownBy(() -> service.update(99L, 1L, "Name", "<div/>", 10L))
@@ -49,7 +49,7 @@ class TemplateServiceTest {
 		Template existing = new Template();
 		existing.setId(5L);
 		when(templateMapper.findById(5L)).thenReturn(existing);
-		CategoryService categoryService = new CategoryService(mock(CategoryMapper.class), 2);
+		CategoryService categoryService = newCategoryService(templateMapper);
 		TemplateService service = new TemplateService(templateMapper, categoryService);
 
 		service.update(5L, 2L, "Updated Name", "<div>Updated</div>", 20L);
@@ -57,8 +57,13 @@ class TemplateServiceTest {
 		ArgumentCaptor<Template> captor = ArgumentCaptor.forClass(Template.class);
 		verify(templateMapper).update(captor.capture());
 		Template updated = captor.getValue();
+		assertThat(updated.getCategoryId()).isEqualTo(2L);
 		assertThat(updated.getName()).isEqualTo("Updated Name");
 		assertThat(updated.getUpdatedBy()).isEqualTo(20L);
 		assertThat(updated.getUpdatedAt()).isNotNull();
+	}
+
+	private CategoryService newCategoryService(TemplateMapper templateMapper) {
+		return new CategoryService(mock(CategoryMapper.class), templateMapper, 2);
 	}
 }
