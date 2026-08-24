@@ -74,6 +74,10 @@
 	}
 
 	function makeImageResizable(img) {
+		if (img.closest('.dc-img-resize-wrap')) {
+			return img.closest('.dc-img-resize-wrap');
+		}
+
 		const handle = document.createElement('span');
 		handle.className = 'dc-img-resize-handle dc-no-print';
 		handle.setAttribute('aria-label', 'Resize image');
@@ -83,15 +87,18 @@
 			e.stopPropagation();
 
 			const startX = e.clientX;
+			const startY = e.clientY;
 			const startWidth = img.offsetWidth;
+			const startHeight = img.offsetHeight;
 			const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : (img.offsetWidth / img.offsetHeight || 1);
 
 			function onMove(ev) {
 				const newWidth = Math.max(30, startWidth + (ev.clientX - startX));
+				const newHeight = Math.max(30, startHeight + (ev.clientY - startY));
 				img.style.maxWidth = 'none';
 				img.style.maxHeight = 'none';
 				img.style.width = newWidth + 'px';
-				img.style.height = (newWidth / ratio) + 'px';
+				img.style.height = ev.shiftKey ? (newWidth / ratio) + 'px' : newHeight + 'px';
 			}
 			function onUp() {
 				document.removeEventListener('mousemove', onMove);
@@ -106,6 +113,16 @@
 		wrap.appendChild(img);
 		wrap.appendChild(handle);
 		return wrap;
+	}
+
+	function wrapExistingImages() {
+		document.querySelectorAll('.doc img').forEach((img) => {
+			if (img.closest('.dc-img-resize-wrap')) return;
+			const marker = document.createTextNode('');
+			img.parentNode.insertBefore(marker, img);
+			const wrap = makeImageResizable(img);
+			marker.parentNode.replaceChild(wrap, marker);
+		});
 	}
 
 	function insertImageFile(file, targetRegion) {
@@ -214,7 +231,14 @@
 				resetToPlaceholder();
 			}
 		});
+
+		if (region.querySelector('img')) {
+			removeBtn.hidden = false;
+			region.classList.add('dc-has-image');
+		}
 	});
+
+	wrapExistingImages();
 
 	const printBtn = document.getElementById('dcPrintBtn');
 	if (printBtn) {

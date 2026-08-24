@@ -272,6 +272,12 @@
 		});
 	}
 
+	function alignEditorDocument(editorInstance) {
+		const body = editorInstance.editorDocument && editorInstance.editorDocument.body;
+		if (!body) return;
+		body.classList.add('dc-editor-doc');
+	}
+
 	Jodit.make('#dcContentEditor', {
 		language: 'en',
 		height: 500,
@@ -289,7 +295,10 @@
 			'undo', 'redo', 'eraser'
 		],
 		events: {
-			afterInit: setUpRegionDeleteButton
+			afterInit: (editorInstance) => {
+				alignEditorDocument(editorInstance);
+				setUpRegionDeleteButton(editorInstance);
+			}
 		}
 	});
 })();
