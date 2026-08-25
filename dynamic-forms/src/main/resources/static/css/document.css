@@ -32,6 +32,9 @@
 	width: auto;
 	max-width: none;
 	margin: 0;
+	background:
+		linear-gradient(#fff, #fff) center top / var(--dc-page-width) 100% no-repeat,
+		#f3f4f6;
 	padding-left: max(var(--dc-page-padding), calc((100vw - var(--dc-page-width)) / 2 + var(--dc-page-padding)));
 	padding-right: max(var(--dc-page-padding), calc((100vw - var(--dc-page-width)) / 2 + var(--dc-page-padding)));
 }
