@@ -29,7 +29,11 @@
 }
 
 .dc-editor-doc {
-	margin: 0 auto;
+	width: auto;
+	max-width: none;
+	margin: 0;
+	padding-left: max(var(--dc-page-padding), calc((100vw - var(--dc-page-width)) / 2 + var(--dc-page-padding)));
+	padding-right: max(var(--dc-page-padding), calc((100vw - var(--dc-page-width)) / 2 + var(--dc-page-padding)));
 }
 
 .doc h2,
