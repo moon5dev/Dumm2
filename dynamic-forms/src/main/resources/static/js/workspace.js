@@ -78,6 +78,35 @@
 			return img.closest('.dc-img-resize-wrap');
 		}
 
+		function getContentWidth(el) {
+			if (!el) return 0;
+			const style = window.getComputedStyle(el);
+			const paddingX = parseFloat(style.paddingLeft || 0) + parseFloat(style.paddingRight || 0);
+			return Math.max(0, el.clientWidth - paddingX);
+		}
+
+		function getResizeBounds() {
+			const container = img.closest('.dc-region-image, td, th, .dc-region, .doc');
+			const maxWidth = getContentWidth(container) || img.offsetWidth || 30;
+			return { maxWidth: Math.max(30, maxWidth) };
+		}
+
+		function syncImageBox(wrap, preferNaturalSize) {
+			const bounds = getResizeBounds();
+			const renderedWidth = preferNaturalSize ? 0 : img.offsetWidth;
+			const renderedHeight = preferNaturalSize ? 0 : img.offsetHeight;
+			const currentWidth = renderedWidth || img.naturalWidth || 120;
+			const currentHeight = renderedHeight || img.naturalHeight || 80;
+			const width = Math.min(Math.max(30, currentWidth), bounds.maxWidth);
+			const height = Math.max(30, currentHeight);
+			wrap.style.width = width + 'px';
+			wrap.style.height = height + 'px';
+			img.style.width = '100%';
+			img.style.height = '100%';
+			img.style.maxWidth = 'none';
+			img.style.maxHeight = 'none';
+		}
+
 		const handle = document.createElement('span');
 		handle.className = 'dc-img-resize-handle dc-no-print';
 		handle.setAttribute('aria-label', 'Resize image');
@@ -88,17 +117,17 @@
 
 			const startX = e.clientX;
 			const startY = e.clientY;
-			const startWidth = img.offsetWidth;
-			const startHeight = img.offsetHeight;
+			const wrap = img.closest('.dc-img-resize-wrap');
+			const startWidth = wrap.offsetWidth;
+			const startHeight = wrap.offsetHeight;
 			const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : (img.offsetWidth / img.offsetHeight || 1);
 
 			function onMove(ev) {
-				const newWidth = Math.max(30, startWidth + (ev.clientX - startX));
+				const bounds = getResizeBounds();
+				const newWidth = Math.min(bounds.maxWidth, Math.max(30, startWidth + (ev.clientX - startX)));
 				const newHeight = Math.max(30, startHeight + (ev.clientY - startY));
-				img.style.maxWidth = 'none';
-				img.style.maxHeight = 'none';
-				img.style.width = newWidth + 'px';
-				img.style.height = ev.shiftKey ? (newWidth / ratio) + 'px' : newHeight + 'px';
+				wrap.style.width = newWidth + 'px';
+				wrap.style.height = ev.shiftKey ? (newWidth / ratio) + 'px' : newHeight + 'px';
 			}
 			function onUp() {
 				document.removeEventListener('mousemove', onMove);
@@ -112,6 +141,11 @@
 		wrap.className = 'dc-img-resize-wrap';
 		wrap.appendChild(img);
 		wrap.appendChild(handle);
+		if (img.complete && img.naturalWidth) {
+			window.requestAnimationFrame(() => syncImageBox(wrap, false));
+		} else {
+			img.addEventListener('load', () => syncImageBox(wrap, true), { once: true });
+		}
 		return wrap;
 	}
 
