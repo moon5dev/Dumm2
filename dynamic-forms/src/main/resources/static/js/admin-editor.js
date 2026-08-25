@@ -326,6 +326,94 @@
 		});
 	}
 
+	function setUpImageRegionResizeHandle(editorInstance) {
+		const resizeHandle = document.createElement('button');
+		resizeHandle.type = 'button';
+		resizeHandle.setAttribute('aria-label', 'Resize image region');
+		Object.assign(resizeHandle.style, {
+			position: 'absolute',
+			display: 'none',
+			width: '44px',
+			height: '12px',
+			padding: '0',
+			border: '1px solid #fff',
+			borderRadius: '999px',
+			background: '#2563eb',
+			boxShadow: '0 1px 3px rgba(0, 0, 0, 0.25)',
+			cursor: 'ns-resize',
+			zIndex: '1000'
+		});
+		document.body.appendChild(resizeHandle);
+
+		let activeRegion = null;
+
+		function positionHandle(el) {
+			const iframeRect = editorInstance.iframe.getBoundingClientRect();
+			const elRect = el.getBoundingClientRect();
+			resizeHandle.style.top = (iframeRect.top + elRect.bottom + window.scrollY - 6) + 'px';
+			resizeHandle.style.left = (iframeRect.left + elRect.left + window.scrollX + (elRect.width / 2) - 22) + 'px';
+			resizeHandle.style.display = 'block';
+		}
+
+		function hideHandle() {
+			activeRegion = null;
+			resizeHandle.style.display = 'none';
+		}
+
+		function refreshHandle() {
+			if (!activeRegion || !activeRegion.isConnected) {
+				hideHandle();
+				return;
+			}
+			positionHandle(activeRegion);
+		}
+
+		editorInstance.editorDocument.addEventListener('click', (e) => {
+			const region = e.target.closest('.dc-region-image[data-dc-region="image"]');
+			if (region) {
+				activeRegion = region;
+				positionHandle(region);
+			} else {
+				hideHandle();
+			}
+		});
+
+		resizeHandle.addEventListener('pointerdown', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			if (!activeRegion) return;
+			resizeHandle.setPointerCapture(e.pointerId);
+
+			const startY = e.clientY;
+			const startHeight = activeRegion.getBoundingClientRect().height;
+
+			function onMove(ev) {
+				const nextHeight = Math.max(60, Math.round(startHeight + (ev.clientY - startY)));
+				activeRegion.style.height = '';
+				activeRegion.style.minHeight = nextHeight + 'px';
+				positionHandle(activeRegion);
+			}
+
+			function onUp(ev) {
+				resizeHandle.removeEventListener('pointermove', onMove);
+				resizeHandle.removeEventListener('pointerup', onUp);
+				resizeHandle.removeEventListener('pointercancel', onUp);
+				if (resizeHandle.hasPointerCapture(ev.pointerId)) {
+					resizeHandle.releasePointerCapture(ev.pointerId);
+				}
+				editorInstance.synchronizeValues();
+			}
+
+			resizeHandle.addEventListener('pointermove', onMove);
+			resizeHandle.addEventListener('pointerup', onUp);
+			resizeHandle.addEventListener('pointercancel', onUp);
+		});
+
+		window.addEventListener('scroll', refreshHandle);
+		window.addEventListener('resize', refreshHandle);
+		editorInstance.editorWindow.addEventListener('scroll', refreshHandle);
+	}
+
 	function alignEditorDocument(editorInstance) {
 		const body = editorInstance.editorDocument && editorInstance.editorDocument.body;
 		if (!body) return;
@@ -352,6 +440,7 @@
 			afterInit: (editorInstance) => {
 				alignEditorDocument(editorInstance);
 				setUpRegionDeleteButton(editorInstance);
+				setUpImageRegionResizeHandle(editorInstance);
 			}
 		}
 	});
