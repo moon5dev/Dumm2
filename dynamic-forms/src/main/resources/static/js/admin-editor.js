@@ -420,6 +420,45 @@
 		body.classList.add('dc-editor-doc');
 	}
 
+	// Excel keeps its own absolute px table width and, when pasted, carries it
+	// over as a percentage relative to whatever it was copied from (often wider
+	// than our 174mm content area) plus a legacy centering-hack margin. Left
+	// untouched this renders the table past the page edge (width > 100%,
+	// negative margin). Only touch tables that are actually overflowing — a
+	// deliberately narrower pasted/authored table (e.g. width: 60%) is left alone.
+	function normalizePastedTableGeometry(editorInstance) {
+		const doc = editorInstance.editorDocument;
+		if (!doc) return;
+
+		let changed = false;
+		doc.querySelectorAll('table').forEach((table) => {
+			const widthOverflows = /%$/.test(table.style.width) && parseFloat(table.style.width) > 100;
+			const marginPullsLeft = parseFloat(table.style.marginLeft) < 0;
+			const marginPullsRight = parseFloat(table.style.marginRight) < 0;
+			if (!widthOverflows && !marginPullsLeft && !marginPullsRight) return;
+
+			table.style.removeProperty('width');
+			table.style.removeProperty('margin-left');
+			table.style.removeProperty('margin-right');
+			table.removeAttribute('width');
+
+			// Clearing the outer <table>'s own width/margin alone isn't enough:
+			// Excel also puts `white-space: nowrap` on every cell, and under
+			// table-layout:auto (forced by the :has(td[colspan]) rule for any
+			// table this size) that alone re-expands the table back out to
+			// content width — measured to make no difference whether the
+			// legacy px `width` attribute on each cell is also cleared, so we
+			// leave that one alone and only touch what's actually load-bearing.
+			table.querySelectorAll('*').forEach((el) => {
+				if (el.style.whiteSpace === 'nowrap') el.style.whiteSpace = '';
+			});
+
+			changed = true;
+		});
+
+		if (changed) editorInstance.synchronizeValues();
+	}
+
 	Jodit.make('#dcContentEditor', {
 		language: 'en',
 		height: 500,
@@ -441,6 +480,15 @@
 				alignEditorDocument(editorInstance);
 				setUpRegionDeleteButton(editorInstance);
 				setUpImageRegionResizeHandle(editorInstance);
+				// Bound here (rather than as a top-level `events.afterPaste` key)
+				// so the closure always has the real editor instance — Jodit's
+				// own afterPaste listeners receive the native paste DOM event as
+				// their argument, not the editor.
+				editorInstance.events.on('afterPaste', () => normalizePastedTableGeometry(editorInstance));
+				// Also run once on load: templates saved before this fix existed
+				// still carry the broken width/margin in their stored content_html,
+				// and only get fixed once someone opens and re-saves them.
+				normalizePastedTableGeometry(editorInstance);
 			}
 		}
 	});
