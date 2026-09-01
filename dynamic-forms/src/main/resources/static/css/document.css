@@ -11,6 +11,19 @@
 	--dc-region-idle-border: #93c5fd;
 	--dc-region-focus-border: #2563eb;
 	--dc-region-focus-bg: #eff6ff;
+	/* Screen-only reference line every page height, so authors can see roughly
+	   where content will spill onto the next printed page. Approximate, not
+	   exact: it repeats at the screen page height (297mm), while the actual
+	   printed page break falls every 267mm (A4 minus the 15mm @page margin on
+	   each side) — the two won't line up pixel-for-pixel until the 18mm screen
+	   padding and 15mm print margin are unified. */
+	--dc-page-break-guide: repeating-linear-gradient(
+		to bottom,
+		transparent 0,
+		transparent calc(var(--dc-page-min-height) - 1px),
+		rgba(37, 99, 235, .35) calc(var(--dc-page-min-height) - 1px),
+		rgba(37, 99, 235, .35) var(--dc-page-min-height)
+	);
 }
 
 .doc,
@@ -21,7 +34,7 @@
 	max-width: 100%;
 	min-height: var(--dc-page-min-height);
 	margin: 0 auto 20px;
-	background: #fff;
+	background: var(--dc-page-break-guide), #fff;
 	padding: var(--dc-page-padding);
 	color: #111827;
 	font-family: var(--dc-document-font-family);
@@ -38,6 +51,7 @@
 	max-width: none;
 	margin: 0;
 	background:
+		var(--dc-page-break-guide) center top / var(--dc-page-width) 100% no-repeat,
 		linear-gradient(#fff, #fff) center top / var(--dc-page-width) 100% no-repeat,
 		#f3f4f6;
 	padding-left: max(var(--dc-page-padding), calc((100vw - var(--dc-page-width)) / 2 + var(--dc-page-padding)));
@@ -191,6 +205,7 @@ table td > br:last-child:not(:only-child) { display: none; }
 		min-height: auto;
 		padding: 0;
 		margin: 0;
+		background: #fff;
 		break-after: page;
 		page-break-after: always;
 	}
