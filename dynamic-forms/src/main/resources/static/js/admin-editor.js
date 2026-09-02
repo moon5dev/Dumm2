@@ -121,7 +121,7 @@
 	const dcRegionTextButton = {
 		name: 'dcRegionText',
 		text: 'Mark Input Region',
-		tooltip: 'Mark the selected part as a user input region',
+		tooltip: 'Mark the selected part as a user input region (Ctrl+Alt+R)',
 		exec: (editor) => {
 			const attributes = {
 				class: 'dc-region',
@@ -146,7 +146,7 @@
 	const dcRegionImageButton = {
 		name: 'dcRegionImage',
 		text: 'Mark Image Region',
-		tooltip: 'Insert a region where the user can paste an image',
+		tooltip: 'Insert a region where the user can paste an image (Ctrl+Alt+M)',
 		exec: (editor) => {
 			const div = editor.createInside.element('div');
 			div.className = 'dc-region-image';
@@ -164,7 +164,7 @@
 	const dcRegionCheckboxButton = {
 		name: 'dcRegionCheckbox',
 		text: 'Insert Checkbox',
-		tooltip: 'Insert a checkbox item',
+		tooltip: 'Insert a checkbox item (Ctrl+Alt+K)',
 		exec: (editor) => {
 			editor.prompt('Enter the checkbox label', 'Checkbox', (label) => {
 				if (!label || label.trim() === '') return;
@@ -190,7 +190,7 @@
 	const dcRegionSelectButton = {
 		name: 'dcRegionSelect',
 		text: 'Insert Dropdown',
-		tooltip: 'Insert a dropdown selection list',
+		tooltip: 'Insert a dropdown selection list (Ctrl+Alt+L)',
 		exec: (editor) => {
 			openOptionListDialog('Dropdown Options', (options) => {
 				const select = editor.createInside.element('select');
@@ -255,7 +255,7 @@
 	const dcJoinedTableButton = {
 		name: 'dcJoinedTable',
 		text: 'Join Table',
-		tooltip: 'Toggle no-gap spacing for the selected table',
+		tooltip: 'Toggle no-gap spacing for the selected table (Ctrl+Alt+T)',
 		exec: (editor) => {
 			const table = findSelectedTable(editor);
 			if (!table) {
@@ -420,6 +420,26 @@
 		body.classList.add('dc-editor-doc');
 	}
 
+	// Ctrl/Cmd+Alt rather than Ctrl/Cmd+Shift: Chrome reserves Ctrl+Shift+C/I/J
+	// for DevTools on Windows/Linux, and separately Cmd+Option+I/J/C/U on
+	// Mac (a completely different letter set — J was picked for Join Table
+	// originally and collided with Mac's "open Console" before this comment
+	// was updated). Those OS/browser-level bindings win over anything a page
+	// registers, so a hotkey landing on one would silently never fire. Avoid
+	// C/I/J/U in both letter sets when adding more of these.
+	function registerRegionHotkeys(editorInstance) {
+		const bindings = [
+			{ name: 'dcRegionText', exec: dcRegionTextButton.exec, keys: ['ctrl+alt+r', 'cmd+alt+r'] },
+			{ name: 'dcRegionImage', exec: dcRegionImageButton.exec, keys: ['ctrl+alt+m', 'cmd+alt+m'] },
+			{ name: 'dcRegionCheckbox', exec: dcRegionCheckboxButton.exec, keys: ['ctrl+alt+k', 'cmd+alt+k'] },
+			{ name: 'dcRegionSelect', exec: dcRegionSelectButton.exec, keys: ['ctrl+alt+l', 'cmd+alt+l'] },
+			{ name: 'dcJoinedTable', exec: dcJoinedTableButton.exec, keys: ['ctrl+alt+t', 'cmd+alt+t'] }
+		];
+		bindings.forEach(({ name, exec, keys }) => {
+			editorInstance.registerCommand(name, { exec: () => exec(editorInstance), hotkeys: keys });
+		});
+	}
+
 	// Excel keeps its own absolute px table width and, when pasted, carries it
 	// over as a percentage relative to whatever it was copied from (often wider
 	// than our 174mm content area) plus a legacy centering-hack margin. Left
@@ -480,6 +500,7 @@
 				alignEditorDocument(editorInstance);
 				setUpRegionDeleteButton(editorInstance);
 				setUpImageRegionResizeHandle(editorInstance);
+				registerRegionHotkeys(editorInstance);
 				// Bound here (rather than as a top-level `events.afterPaste` key)
 				// so the closure always has the real editor instance — Jodit's
 				// own afterPaste listeners receive the native paste DOM event as
