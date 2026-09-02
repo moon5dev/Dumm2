@@ -6,23 +6,22 @@
 	--dc-document-font-size: 13px;
 	--dc-page-width: 210mm;
 	--dc-page-min-height: 297mm;
-	--dc-page-padding: 18mm;
+	/* Keep the on-screen document padding aligned with the print margin so
+	   editing and printing use a similar content width. */
+	--dc-page-padding: 15mm;
 	--dc-locked-bg: #f3f4f6;
 	--dc-region-idle-border: #93c5fd;
 	--dc-region-focus-border: #2563eb;
 	--dc-region-focus-bg: #eff6ff;
-	/* Screen-only reference line every page height, so authors can see roughly
-	   where content will spill onto the next printed page. Approximate, not
-	   exact: it repeats at the screen page height (297mm), while the actual
-	   printed page break falls every 267mm (A4 minus the 15mm @page margin on
-	   each side) — the two won't line up pixel-for-pixel until the 18mm screen
-	   padding and 15mm print margin are unified. */
+	/* Screen-only reference line for approximate printed page overflow.
+	   Offset it by the page padding because on-screen content starts below
+	   the padding while print pagination is based on the @page margin. */
 	--dc-page-break-guide: repeating-linear-gradient(
 		to bottom,
 		transparent 0,
-		transparent calc(var(--dc-page-min-height) - 1px),
-		rgba(37, 99, 235, .35) calc(var(--dc-page-min-height) - 1px),
-		rgba(37, 99, 235, .35) var(--dc-page-min-height)
+		transparent calc(var(--dc-page-min-height) - (2 * var(--dc-page-padding)) - 1px),
+		rgba(37, 99, 235, .35) calc(var(--dc-page-min-height) - (2 * var(--dc-page-padding)) - 1px),
+		rgba(37, 99, 235, .35) calc(var(--dc-page-min-height) - (2 * var(--dc-page-padding)))
 	);
 }
 
@@ -34,7 +33,7 @@
 	max-width: 100%;
 	min-height: var(--dc-page-min-height);
 	margin: 0 auto 20px;
-	background: var(--dc-page-break-guide), #fff;
+	background: var(--dc-page-break-guide) 0 var(--dc-page-padding), #fff;
 	padding: var(--dc-page-padding);
 	color: #111827;
 	font-family: var(--dc-document-font-family);
@@ -51,7 +50,7 @@
 	max-width: none;
 	margin: 0;
 	background:
-		var(--dc-page-break-guide) center top / var(--dc-page-width) 100% no-repeat,
+		var(--dc-page-break-guide) center var(--dc-page-padding) / var(--dc-page-width) 100% no-repeat,
 		linear-gradient(#fff, #fff) center top / var(--dc-page-width) 100% no-repeat,
 		#f3f4f6;
 	padding-left: max(var(--dc-page-padding), calc((100vw - var(--dc-page-width)) / 2 + var(--dc-page-padding)));
