@@ -67,10 +67,13 @@
 	</select>
 	<input type="color" id="dcFontColor" value="#111827">
 	<a th:href="@{/}" class="btn btn-sm btn-outline-secondary ms-auto">Home</a>
+	<button type="button" id="dcSaveDraftBtn" class="btn btn-sm btn-outline-primary"
+			title="Saves this form's current state. Shared per template, not per person — reopening it (by anyone) shows whatever was saved last.">Save Current Form</button>
 	<button type="button" id="dcPrintBtn" class="btn btn-sm btn-primary">Print / Save as PDF</button>
 </div>
 
-<div th:each="template : ${templates}" class="doc" contenteditable="false" th:utext="${template.contentHtml}"></div>
+<div th:each="template : ${templates}" class="doc" contenteditable="false"
+	 th:attr="data-template-id=${template.id}" th:utext="${template.contentHtml}"></div>
 
 <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}" defer></script>
 <script th:src="@{/js/workspace.js}" defer></script>

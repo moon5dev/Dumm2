@@ -13,6 +13,8 @@ public class Template {
 	private Long categoryId;
 	private String name;
 	private String contentHtml;
+	private String draftContentHtml;
+	private LocalDateTime draftSavedAt;
 	private Long createdBy;
 	private LocalDateTime createdAt;
 	private Long updatedBy;

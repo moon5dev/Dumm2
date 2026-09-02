@@ -279,6 +279,81 @@
 		printBtn.addEventListener('click', () => window.print());
 	}
 
+	// Strips UI-only DOM that workspace.js itself injects at load time (image
+	// remove buttons, resize handles, the print-only <select> mirror) before
+	// a draft is saved. Without this, saved HTML round-trips back through the
+	// same injection code on next load — which has no "already has one" guard
+	// for these — so a stray extra copy gets appended every save/reload cycle.
+	function getCleanDraftHtml(doc) {
+		const clone = doc.cloneNode(true);
+		const sourceControls = doc.querySelectorAll('input, select, textarea');
+		const cloneControls = clone.querySelectorAll('input, select, textarea');
+
+		sourceControls.forEach((sourceControl, index) => {
+			const cloneControl = cloneControls[index];
+			if (!cloneControl) return;
+
+			if (sourceControl.matches('input[type="checkbox"], input[type="radio"]')) {
+				if (sourceControl.checked) {
+					cloneControl.setAttribute('checked', 'checked');
+				} else {
+					cloneControl.removeAttribute('checked');
+				}
+				return;
+			}
+
+			if (sourceControl.tagName === 'SELECT') {
+				[...sourceControl.options].forEach((option, optionIndex) => {
+					const cloneOption = cloneControl.options[optionIndex];
+					if (!cloneOption) return;
+					if (option.selected) {
+						cloneOption.setAttribute('selected', 'selected');
+					} else {
+						cloneOption.removeAttribute('selected');
+					}
+				});
+				return;
+			}
+
+			if (sourceControl.tagName === 'TEXTAREA') {
+				cloneControl.textContent = sourceControl.value;
+				return;
+			}
+
+			cloneControl.setAttribute('value', sourceControl.value);
+		});
+		clone.querySelectorAll('.dc-no-print, .dc-region-select-print').forEach((el) => el.remove());
+		return clone.innerHTML;
+	}
+
+	const saveDraftBtn = document.getElementById('dcSaveDraftBtn');
+	if (saveDraftBtn) {
+		saveDraftBtn.addEventListener('click', async () => {
+			const docs = [...document.querySelectorAll('.doc[data-template-id]')];
+			saveDraftBtn.disabled = true;
+			const originalText = saveDraftBtn.textContent;
+			saveDraftBtn.textContent = 'Saving...';
+			try {
+				await Promise.all(docs.map((doc) => {
+					const body = new URLSearchParams();
+					body.set('templateId', doc.dataset.templateId);
+					body.set('contentHtml', getCleanDraftHtml(doc));
+					return fetch('/workspace/draft', { method: 'POST', body }).then((response) => {
+						if (!response.ok) throw new Error('Failed to save draft.');
+					});
+				}));
+				saveDraftBtn.textContent = 'Saved';
+			} catch (e) {
+				saveDraftBtn.textContent = 'Save failed';
+			} finally {
+				setTimeout(() => {
+					saveDraftBtn.textContent = originalText;
+					saveDraftBtn.disabled = false;
+				}, 1500);
+			}
+		});
+	}
+
 	window.addEventListener('beforeprint', () => {
 		document.querySelectorAll('.dc-region-select').forEach(select => {
 			let printSpan = select.nextElementSibling;

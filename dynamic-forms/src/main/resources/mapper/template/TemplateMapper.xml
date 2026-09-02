@@ -4,36 +4,52 @@
 
 	<insert id="insert" parameterType="dev.moon5.dynamicforms.forms.template.Template"
 			useGeneratedKeys="true" keyProperty="id">
-		INSERT INTO template (category_id, name, content_html, created_by, created_at)
-		VALUES (#{categoryId}, #{name}, #{contentHtml}, #{createdBy}, #{createdAt})
+		INSERT INTO template (category_id, name, content_html, draft_content_html, created_by, created_at)
+		VALUES (#{categoryId}, #{name}, #{contentHtml}, #{contentHtml}, #{createdBy}, #{createdAt})
 	</insert>
 
 	<select id="findById" resultType="dev.moon5.dynamicforms.forms.template.Template">
-		SELECT id, category_id, name, content_html, created_by, created_at, updated_by, updated_at
+		SELECT id, category_id, name, content_html, draft_content_html, draft_saved_at,
+			created_by, created_at, updated_by, updated_at
 		FROM template
 		WHERE id = #{id}
 	</select>
 
 	<select id="findByCategoryId" resultType="dev.moon5.dynamicforms.forms.template.Template">
-		SELECT id, category_id, name, content_html, created_by, created_at, updated_by, updated_at
+		SELECT id, category_id, name, content_html, draft_content_html, draft_saved_at,
+			created_by, created_at, updated_by, updated_at
 		FROM template
 		WHERE category_id = #{categoryId}
 		ORDER BY id
 	</select>
 
 	<select id="findAll" resultType="dev.moon5.dynamicforms.forms.template.Template">
-		SELECT id, category_id, name, content_html, created_by, created_at, updated_by, updated_at
+		SELECT id, category_id, name, content_html, draft_content_html, draft_saved_at,
+			created_by, created_at, updated_by, updated_at
 		FROM template
 		ORDER BY id
 	</select>
 
+	<!-- draft_content_html is only re-seeded from content_html while nobody has
+	     saved a draft yet (draft_saved_at is still null). Once draft_saved_at
+	     is set, editing the template here never touches the draft again. -->
 	<update id="update" parameterType="dev.moon5.dynamicforms.forms.template.Template">
 		UPDATE template
 		SET category_id = #{categoryId},
 			name = #{name},
 			content_html = #{contentHtml},
+			<if test="draftSavedAt == null">
+			draft_content_html = #{contentHtml},
+			</if>
 			updated_by = #{updatedBy},
 			updated_at = #{updatedAt}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateDraft">
+		UPDATE template
+		SET draft_content_html = #{draftContentHtml},
+			draft_saved_at = #{draftSavedAt}
 		WHERE id = #{id}
 	</update>
 

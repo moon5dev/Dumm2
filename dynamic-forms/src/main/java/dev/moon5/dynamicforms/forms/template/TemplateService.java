@@ -89,4 +89,21 @@ public class TemplateService {
 	public void delete(Long id) {
 		templateMapper.deleteById(id);
 	}
+
+	/** The template with its content swapped for the saved draft, if one exists — what the fill-in screen should show. */
+	public Template getForFilling(Long id) {
+		Template template = templateMapper.findById(id);
+		if (template != null && template.getDraftContentHtml() != null) {
+			template.setContentHtml(template.getDraftContentHtml());
+		}
+		return template;
+	}
+
+	public void saveDraft(Long id, String draftContentHtml) {
+		Template template = new Template();
+		template.setId(id);
+		template.setDraftContentHtml(draftContentHtml);
+		template.setDraftSavedAt(LocalDateTime.now());
+		templateMapper.updateDraft(template);
+	}
 }

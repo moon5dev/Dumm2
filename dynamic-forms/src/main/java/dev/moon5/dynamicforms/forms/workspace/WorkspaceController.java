@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import dev.moon5.dynamicforms.forms.template.Template;
 import dev.moon5.dynamicforms.forms.template.TemplateService;
@@ -66,7 +69,7 @@ public class WorkspaceController {
 			return "redirect:/workspace";
 		}
 		List<Template> templates = templateId.stream()
-			.map(templateService::getById)
+			.map(templateService::getForFilling)
 			.filter(t -> t != null)
 			.toList();
 		if (templates.isEmpty()) {
@@ -74,5 +77,12 @@ public class WorkspaceController {
 		}
 		model.addAttribute("templates", templates);
 		return "workspace/view";
+	}
+
+	@PostMapping("/draft")
+	@ResponseBody
+	public ResponseEntity<Void> saveDraft(@RequestParam Long templateId, @RequestParam String contentHtml) {
+		templateService.saveDraft(templateId, contentHtml);
+		return ResponseEntity.ok().build();
 	}
 }

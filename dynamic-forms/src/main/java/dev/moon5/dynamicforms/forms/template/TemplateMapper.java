@@ -18,6 +18,8 @@ public interface TemplateMapper {
 
 	void update(Template template);
 
+	void updateDraft(Template template);
+
 	void deleteById(@Param("id") Long id);
 
 	boolean existsByCategoryId(@Param("categoryId") Long categoryId);
