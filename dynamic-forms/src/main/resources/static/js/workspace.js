@@ -217,6 +217,12 @@
 		targetRegion.classList.remove('dc-drag-over');
 	}
 
+	function getImagePlaceholderHTML(region) {
+		const placeholder = region.querySelector('.dc-region-placeholder');
+		if (placeholder) return placeholder.outerHTML;
+		return '<span class="dc-region-placeholder">Click, then paste an image with Ctrl+V</span>';
+	}
+
 	document.querySelectorAll('.dc-region-image, .dc-region[data-dc-region="text"]').forEach(region => {
 		region.addEventListener('paste', (e) => handleImagePaste(e, region));
 		region.addEventListener('dragover', (e) => {
@@ -228,7 +234,7 @@
 	});
 
 	document.querySelectorAll('.dc-region-image').forEach(region => {
-		const placeholderHTML = region.innerHTML;
+		const placeholderHTML = getImagePlaceholderHTML(region);
 
 		const removeBtn = document.createElement('button');
 		removeBtn.type = 'button';
