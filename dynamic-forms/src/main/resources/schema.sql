@@ -22,11 +22,8 @@ CREATE TABLE IF NOT EXISTS template (
     name VARCHAR(200) NOT NULL,
     content_html CLOB NOT NULL,
     -- User-facing "temp save" of the filled-in form. Seeded to content_html
-    -- on create so a fresh template starts with an identical draft. While
-    -- draft_saved_at is still null (nobody has saved a draft yet), admin
-    -- edits keep re-seeding this column too; once a real draft exists it's
-    -- left alone so editing the template design can't silently wipe
-    -- someone's in-progress work. See TemplateMapper.xml `update`.
+    -- on create; admin template edits reset it to the latest content_html so
+    -- the fill-in screen reflects the newest template after a design change.
     draft_content_html CLOB,
     draft_saved_at TIMESTAMP,
     created_by BIGINT NOT NULL,

@@ -30,17 +30,15 @@
 		ORDER BY id
 	</select>
 
-	<!-- draft_content_html is only re-seeded from content_html while nobody has
-	     saved a draft yet (draft_saved_at is still null). Once draft_saved_at
-	     is set, editing the template here never touches the draft again. -->
+	<!-- Admin template edits reset the user-facing draft so the fill-in screen
+	     always starts from the latest template after a design change. -->
 	<update id="update" parameterType="dev.moon5.dynamicforms.forms.template.Template">
 		UPDATE template
 		SET category_id = #{categoryId},
 			name = #{name},
 			content_html = #{contentHtml},
-			<if test="draftSavedAt == null">
 			draft_content_html = #{contentHtml},
-			</if>
+			draft_saved_at = NULL,
 			updated_by = #{updatedBy},
 			updated_at = #{updatedAt}
 		WHERE id = #{id}
