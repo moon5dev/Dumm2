@@ -90,10 +90,10 @@ public class TemplateService {
 		templateMapper.deleteById(id);
 	}
 
-	/** The template with its content swapped for the saved draft, if one exists — what the fill-in screen should show. */
+	/** The template with its content swapped for a user-saved draft, if one exists. */
 	public Template getForFilling(Long id) {
 		Template template = templateMapper.findById(id);
-		if (template != null && template.getDraftContentHtml() != null) {
+		if (template != null && template.getDraftSavedAt() != null && template.getDraftContentHtml() != null) {
 			template.setContentHtml(template.getDraftContentHtml());
 		}
 		return template;
