@@ -19,6 +19,23 @@
 		}
 	}
 
+	function placeCaretAtEnd(editor, node) {
+		const range = editor.editorDocument.createRange();
+		const selection = editor.editorWindow.getSelection();
+		range.selectNodeContents(node);
+		range.collapse(false);
+		selection.removeAllRanges();
+		selection.addRange(range);
+	}
+
+	function appendPlainTextLineAfterRegion(editor, region) {
+		const doc = editor.editorDocument;
+		const line = doc.createElement('div');
+		line.appendChild(doc.createElement('br'));
+		appendAfterRegionContent(region, line);
+		placeCaretAtEnd(editor, line);
+	}
+
 	function insertRegionNode(editor, node) {
 		const parentRegion = findSelectionRegion(editor);
 		if (parentRegion) {
@@ -442,6 +459,17 @@
 		body.classList.add('dc-editor-doc');
 	}
 
+	function setUpRegionEnterExit(editorInstance) {
+		editorInstance.editorDocument.addEventListener('keydown', (e) => {
+			if (e.key !== 'Enter' || e.shiftKey) return;
+			const region = e.target.closest && e.target.closest('[data-dc-region]');
+			if (!region) return;
+			e.preventDefault();
+			appendPlainTextLineAfterRegion(editorInstance, region);
+			editorInstance.synchronizeValues();
+		});
+	}
+
 	// Ctrl/Cmd+Alt rather than Ctrl/Cmd+Shift: Chrome reserves Ctrl+Shift+C/I/J
 	// for DevTools on Windows/Linux, and separately Cmd+Option+I/J/C/U on
 	// Mac (a completely different letter set — J was picked for Join Table
@@ -522,6 +550,7 @@
 				alignEditorDocument(editorInstance);
 				setUpRegionDeleteButton(editorInstance);
 				setUpImageRegionResizeHandle(editorInstance);
+				setUpRegionEnterExit(editorInstance);
 				registerRegionHotkeys(editorInstance);
 				// Bound here (rather than as a top-level `events.afterPaste` key)
 				// so the closure always has the real editor instance — Jodit's
