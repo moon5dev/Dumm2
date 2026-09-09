@@ -10,10 +10,19 @@
 		return el ? el.closest('[data-dc-region]') : null;
 	}
 
+	function appendAfterRegionContent(region, node) {
+		const container = region.closest('td, th') || region.parentElement;
+		if (container) {
+			container.appendChild(node);
+		} else {
+			region.after(node);
+		}
+	}
+
 	function insertRegionNode(editor, node) {
 		const parentRegion = findSelectionRegion(editor);
 		if (parentRegion) {
-			parentRegion.after(node);
+			appendAfterRegionContent(parentRegion, node);
 		} else {
 			editor.selection.insertNode(node);
 		}
