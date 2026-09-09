@@ -2,8 +2,21 @@
 	const textarea = document.getElementById('dcContentEditor');
 	if (!textarea || typeof Jodit === 'undefined') return;
 
+	function findSelectionRegion(editor) {
+		const sel = editor.editorWindow.getSelection();
+		if (!sel || !sel.rangeCount) return null;
+		const node = sel.getRangeAt(0).commonAncestorContainer;
+		const el = node.nodeType === 3 ? node.parentElement : node;
+		return el ? el.closest('[data-dc-region]') : null;
+	}
+
 	function insertRegionNode(editor, node) {
-		editor.selection.insertNode(node);
+		const parentRegion = findSelectionRegion(editor);
+		if (parentRegion) {
+			parentRegion.after(node);
+		} else {
+			editor.selection.insertNode(node);
+		}
 
 		// Jodit can leave a stray zero-width text node (caret anchor) between
 		// the inserted region and a trailing <br>; skip past those before
