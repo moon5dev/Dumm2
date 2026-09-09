@@ -12,11 +12,18 @@
 
 	function appendAfterRegionContent(region, node) {
 		const container = region.closest('td, th') || region.parentElement;
-		if (container) {
+		if (container && container.matches('td, th')) {
 			container.appendChild(node);
-		} else {
-			region.after(node);
+			return;
 		}
+
+		let outerRegion = region;
+		let parentRegion = outerRegion.parentElement && outerRegion.parentElement.closest('[data-dc-region]');
+		while (parentRegion) {
+			outerRegion = parentRegion;
+			parentRegion = outerRegion.parentElement && outerRegion.parentElement.closest('[data-dc-region]');
+		}
+		outerRegion.after(node);
 	}
 
 	function placeCaretAtEnd(editor, node) {
