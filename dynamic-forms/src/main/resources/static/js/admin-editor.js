@@ -36,6 +36,16 @@
 		placeCaretAtEnd(editor, line);
 	}
 
+	function findEventRegion(editor, event) {
+		const target = event.target && event.target.nodeType === 3
+			? event.target.parentElement
+			: event.target;
+		const targetRegion = target && target.closest
+			? target.closest('[data-dc-region]')
+			: null;
+		return targetRegion || findSelectionRegion(editor);
+	}
+
 	function insertRegionNode(editor, node) {
 		const parentRegion = findSelectionRegion(editor);
 		if (parentRegion) {
@@ -462,12 +472,13 @@
 	function setUpRegionEnterExit(editorInstance) {
 		editorInstance.editorDocument.addEventListener('keydown', (e) => {
 			if (e.key !== 'Enter' || e.shiftKey) return;
-			const region = e.target.closest && e.target.closest('[data-dc-region]');
+			const region = findEventRegion(editorInstance, e);
 			if (!region) return;
 			e.preventDefault();
+			e.stopImmediatePropagation();
 			appendPlainTextLineAfterRegion(editorInstance, region);
 			editorInstance.synchronizeValues();
-		});
+		}, true);
 	}
 
 	// Ctrl/Cmd+Alt rather than Ctrl/Cmd+Shift: Chrome reserves Ctrl+Shift+C/I/J
