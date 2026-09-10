@@ -479,8 +479,14 @@
 	function setUpRegionEnterExit(editorInstance) {
 		editorInstance.editorDocument.addEventListener('keydown', (e) => {
 			if (e.key !== 'Enter' || e.shiftKey) return;
+			// Only a text region needs this: it's contenteditable, so a
+			// literal Enter would otherwise insert a raw newline into it.
+			// A select/checkbox/image region isn't text-typed into the same
+			// way, and intercepting Enter there breaks native behavior —
+			// most notably, confirming the highlighted option in an open
+			// <select> dropdown.
 			const region = findEventRegion(editorInstance, e);
-			if (!region) return;
+			if (!region || region.dataset.dcRegion !== 'text') return;
 			e.preventDefault();
 			e.stopImmediatePropagation();
 			appendPlainTextLineAfterRegion(editorInstance, region);
