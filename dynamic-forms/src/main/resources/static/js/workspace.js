@@ -259,7 +259,18 @@
 		region.appendChild(removeBtn);
 
 		function resetToPlaceholder() {
-			region.innerHTML = placeholderHTML;
+			// Only pull the image back out — same "touch just the image parts"
+			// rule as replaceImageRegionContent's insert path. A blanket
+			// `region.innerHTML = placeholderHTML` here would silently delete
+			// any custom region (e.g. a checkbox) nested alongside the image.
+			[...region.children].forEach((child) => {
+				if (child.classList.contains('dc-img-resize-wrap') || child.tagName === 'IMG') {
+					child.remove();
+				}
+			});
+			if (!region.querySelector('.dc-region-placeholder')) {
+				region.insertAdjacentHTML('afterbegin', placeholderHTML);
+			}
 			region.appendChild(removeBtn);
 			removeBtn.hidden = true;
 			region.classList.remove('dc-has-image');
