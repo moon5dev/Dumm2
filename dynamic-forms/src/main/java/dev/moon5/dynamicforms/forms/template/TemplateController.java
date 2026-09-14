@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import dev.moon5.dynamicforms.auth.AuthController;
 import dev.moon5.dynamicforms.auth.User;
@@ -83,9 +84,14 @@ public class TemplateController {
 	}
 
 	@PostMapping("/{id}/copy")
-	public String copy(@PathVariable Long id, HttpSession session) {
-		Template copied = templateService.copy(id, currentUserId(session));
-		return "redirect:/admin/template/" + copied.getId() + "/edit";
+	public String copy(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+		try {
+			Template copied = templateService.copy(id, currentUserId(session));
+			return "redirect:/admin/template/" + copied.getId() + "/edit";
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			return "redirect:/admin/template";
+		}
 	}
 
 	@PostMapping("/{id}/delete")

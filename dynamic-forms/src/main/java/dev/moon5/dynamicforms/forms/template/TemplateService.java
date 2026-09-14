@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +14,9 @@ import dev.moon5.dynamicforms.forms.category.CategoryService;
 
 @Service
 public class TemplateService {
+
+	private static final int MAX_TEMPLATE_NAME_LENGTH = 200;
+	private static final String COPY_SUFFIX = " - Copy";
 
 	private final TemplateMapper templateMapper;
 	private final CategoryService categoryService;
@@ -81,12 +85,39 @@ public class TemplateService {
 
 		Template copy = new Template();
 		copy.setCategoryId(source.getCategoryId());
-		copy.setName(source.getName() + " - Copy");
+		copy.setName(nextCopyName(source.getName()));
 		copy.setContentHtml(source.getContentHtml());
 		copy.setCreatedBy(createdBy);
 		copy.setCreatedAt(LocalDateTime.now());
 		templateMapper.insert(copy);
 		return copy;
+	}
+
+	private String nextCopyName(String sourceName) {
+		Set<String> usedNames = templateMapper.findAll().stream()
+			.map(Template::getName)
+			.collect(Collectors.toSet());
+
+		String baseName = sourceName == null ? "Template" : sourceName;
+		String candidate = withCopySuffix(baseName, COPY_SUFFIX);
+		if (!usedNames.contains(candidate)) {
+			return candidate;
+		}
+
+		for (int copyNo = 2; ; copyNo++) {
+			candidate = withCopySuffix(baseName, COPY_SUFFIX + " (" + copyNo + ")");
+			if (!usedNames.contains(candidate)) {
+				return candidate;
+			}
+		}
+	}
+
+	private String withCopySuffix(String baseName, String suffix) {
+		int maxBaseLength = MAX_TEMPLATE_NAME_LENGTH - suffix.length();
+		String trimmedBase = baseName.length() > maxBaseLength
+			? baseName.substring(0, maxBaseLength)
+			: baseName;
+		return trimmedBase + suffix;
 	}
 
 	public void update(Long id, Long categoryId, String name, String contentHtml, Long updatedBy) {

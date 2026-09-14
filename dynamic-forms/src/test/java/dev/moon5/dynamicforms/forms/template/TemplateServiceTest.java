@@ -6,6 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -65,6 +67,7 @@ class TemplateServiceTest {
 		source.setDraftContentHtml("<div>User draft</div>");
 		source.setDraftSavedAt(java.time.LocalDateTime.now());
 		when(templateMapper.findById(5L)).thenReturn(source);
+		when(templateMapper.findAll()).thenReturn(List.of(source));
 		CategoryService categoryService = newCategoryService(templateMapper);
 		TemplateService service = new TemplateService(templateMapper, categoryService);
 
@@ -81,6 +84,41 @@ class TemplateServiceTest {
 		assertThat(inserted.getDraftSavedAt()).isNull();
 		assertThat(inserted.getCreatedBy()).isEqualTo(20L);
 		assertThat(inserted.getCreatedAt()).isNotNull();
+	}
+
+	@Test
+	void copyAddsNumberWhenCopyNameAlreadyExists() {
+		TemplateMapper templateMapper = mock(TemplateMapper.class);
+		Template source = template(5L, 2L, "Inspection Report", "<div>Source</div>");
+		Template existingCopy = template(6L, 2L, "Inspection Report - Copy", "<div>Copy</div>");
+		when(templateMapper.findById(5L)).thenReturn(source);
+		when(templateMapper.findAll()).thenReturn(List.of(source, existingCopy));
+		CategoryService categoryService = newCategoryService(templateMapper);
+		TemplateService service = new TemplateService(templateMapper, categoryService);
+
+		service.copy(5L, 20L);
+
+		ArgumentCaptor<Template> captor = ArgumentCaptor.forClass(Template.class);
+		verify(templateMapper).insert(captor.capture());
+		assertThat(captor.getValue().getName()).isEqualTo("Inspection Report - Copy (2)");
+	}
+
+	@Test
+	void copyTrimsLongNameToFitColumnLimit() {
+		TemplateMapper templateMapper = mock(TemplateMapper.class);
+		String longName = "A".repeat(198);
+		Template source = template(5L, 2L, longName, "<div>Source</div>");
+		when(templateMapper.findById(5L)).thenReturn(source);
+		when(templateMapper.findAll()).thenReturn(List.of(source));
+		CategoryService categoryService = newCategoryService(templateMapper);
+		TemplateService service = new TemplateService(templateMapper, categoryService);
+
+		service.copy(5L, 20L);
+
+		ArgumentCaptor<Template> captor = ArgumentCaptor.forClass(Template.class);
+		verify(templateMapper).insert(captor.capture());
+		assertThat(captor.getValue().getName()).hasSize(200);
+		assertThat(captor.getValue().getName()).endsWith(" - Copy");
 	}
 
 	@Test
@@ -105,5 +143,14 @@ class TemplateServiceTest {
 
 	private CategoryService newCategoryService(TemplateMapper templateMapper) {
 		return new CategoryService(mock(CategoryMapper.class), templateMapper, 2);
+	}
+
+	private Template template(Long id, Long categoryId, String name, String contentHtml) {
+		Template template = new Template();
+		template.setId(id);
+		template.setCategoryId(categoryId);
+		template.setName(name);
+		template.setContentHtml(contentHtml);
+		return template;
 	}
 }
