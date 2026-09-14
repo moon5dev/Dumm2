@@ -82,6 +82,12 @@ public class TemplateController {
 		return "redirect:/admin/template";
 	}
 
+	@PostMapping("/{id}/copy")
+	public String copy(@PathVariable Long id, HttpSession session) {
+		Template copied = templateService.copy(id, currentUserId(session));
+		return "redirect:/admin/template/" + copied.getId() + "/edit";
+	}
+
 	@PostMapping("/{id}/delete")
 	public String delete(@PathVariable Long id) {
 		templateService.delete(id);

@@ -44,6 +44,46 @@ class TemplateServiceTest {
 	}
 
 	@Test
+	void copyRejectsUnknownTemplate() {
+		TemplateMapper templateMapper = mock(TemplateMapper.class);
+		when(templateMapper.findById(99L)).thenReturn(null);
+		CategoryService categoryService = newCategoryService(templateMapper);
+		TemplateService service = new TemplateService(templateMapper, categoryService);
+
+		assertThatThrownBy(() -> service.copy(99L, 10L))
+			.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void copyCreatesNewTemplateFromSourceContent() {
+		TemplateMapper templateMapper = mock(TemplateMapper.class);
+		Template source = new Template();
+		source.setId(5L);
+		source.setCategoryId(2L);
+		source.setName("Inspection Report");
+		source.setContentHtml("<div>Source</div>");
+		source.setDraftContentHtml("<div>User draft</div>");
+		source.setDraftSavedAt(java.time.LocalDateTime.now());
+		when(templateMapper.findById(5L)).thenReturn(source);
+		CategoryService categoryService = newCategoryService(templateMapper);
+		TemplateService service = new TemplateService(templateMapper, categoryService);
+
+		Template copied = service.copy(5L, 20L);
+
+		ArgumentCaptor<Template> captor = ArgumentCaptor.forClass(Template.class);
+		verify(templateMapper).insert(captor.capture());
+		Template inserted = captor.getValue();
+		assertThat(copied).isSameAs(inserted);
+		assertThat(inserted.getCategoryId()).isEqualTo(2L);
+		assertThat(inserted.getName()).isEqualTo("Inspection Report - Copy");
+		assertThat(inserted.getContentHtml()).isEqualTo("<div>Source</div>");
+		assertThat(inserted.getDraftContentHtml()).isNull();
+		assertThat(inserted.getDraftSavedAt()).isNull();
+		assertThat(inserted.getCreatedBy()).isEqualTo(20L);
+		assertThat(inserted.getCreatedAt()).isNotNull();
+	}
+
+	@Test
 	void updateSetsUpdatedByAndUpdatedAt() {
 		TemplateMapper templateMapper = mock(TemplateMapper.class);
 		Template existing = new Template();

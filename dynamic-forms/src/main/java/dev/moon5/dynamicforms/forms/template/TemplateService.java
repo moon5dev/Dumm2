@@ -73,6 +73,22 @@ public class TemplateService {
 		templateMapper.insert(template);
 	}
 
+	public Template copy(Long id, Long createdBy) {
+		Template source = templateMapper.findById(id);
+		if (source == null) {
+			throw new IllegalArgumentException("Template does not exist.");
+		}
+
+		Template copy = new Template();
+		copy.setCategoryId(source.getCategoryId());
+		copy.setName(source.getName() + " - Copy");
+		copy.setContentHtml(source.getContentHtml());
+		copy.setCreatedBy(createdBy);
+		copy.setCreatedAt(LocalDateTime.now());
+		templateMapper.insert(copy);
+		return copy;
+	}
+
 	public void update(Long id, Long categoryId, String name, String contentHtml, Long updatedBy) {
 		Template template = templateMapper.findById(id);
 		if (template == null) {

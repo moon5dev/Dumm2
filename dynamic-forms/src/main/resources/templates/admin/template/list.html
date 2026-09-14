@@ -20,7 +20,7 @@
 				<tr>
 					<th>Name</th>
 					<th>Category</th>
-					<th style="width: 160px;"></th>
+					<th style="width: 230px;"></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -30,6 +30,11 @@
 					<td class="text-end">
 						<a class="btn btn-outline-secondary btn-sm"
 						   th:href="@{/admin/template/{id}/edit(id=${template.id})}">Edit</a>
+						<form th:action="@{/admin/template/{id}/copy(id=${template.id})}"
+							  method="post" class="d-inline"
+							  onsubmit="return confirm('Copy this template?');">
+							<button type="submit" class="btn btn-outline-primary btn-sm">Copy</button>
+						</form>
 						<form th:action="@{/admin/template/{id}/delete(id=${template.id})}"
 							  method="post" class="d-inline"
 							  onsubmit="return confirm('Delete this template?');">
